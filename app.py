@@ -9,7 +9,7 @@ import os
 import requests
 from pymongo import MongoClient, errors
 import gridfs
-import io
+import time
 
 # Configuration de MongoDB avec tentative de reconnexion
 def connect_to_mongodb(retries=5, delay=5):
@@ -212,13 +212,14 @@ def main():
                                data=csv,
                                file_name='extracted_data.csv',
                                mime='text/csv')
-
-            # Add buttons to save image and CSV to MongoDB
+            
+            # Add button to save image to MongoDB
             if st.button("Save Image to MongoDB"):
-                save_image_to_mongodb(image_cv2, 'annotated_image.png')
-
+                save_image_to_mongodb(image_cv2, "annotated_image.png")
+            
+            # Add button to save CSV to MongoDB
             if st.button("Save CSV to MongoDB"):
-                save_csv_to_mongodb(csv, 'extracted_data.csv')
+                save_csv_to_mongodb(csv, "extracted_data.csv")
         else:
             st.write("No detections or incorrect result format.")
 
