@@ -7,13 +7,8 @@ import pytesseract
 import pandas as pd
 import os
 import requests
-
-try:
-    from pymongo import MongoClient
-    import gridfs
-    st.success("pymongo et gridfs importés avec succès")
-except ModuleNotFoundError as e:
-    st.error(f"Erreur d'importation des modules: {e}")
+from pymongo import MongoClient
+import gridfs
 
 # Configuration de MongoDB
 client = MongoClient("mongodb://localhost:27017/")  # Remplacez par votre URL MongoDB si nécessaire
@@ -189,4 +184,24 @@ def main():
 
             # Create a DataFrame for the CSV export
             df = pd.DataFrame.from_dict(class_data, orient='index').transpose()
-            column_order = ['Side1', 'Side2', 'LEONIPartNumber', 'SupplierPartNumber', 'Wiretype', '
+            column_order = ['Side1', 'Side2', 'LEONIPartNumber', 'SupplierPartNumber', 'Wiretype', 'Length', 'TypeOfCableAssembly']
+            df = df[column_order]  # Reorder the columns
+
+            # Display data in a table
+            st.write("Extracted Data:")
+            st.dataframe(df)
+
+            # Convert DataFrame to CSV and save to MongoDB
+            csv = df.to_csv(index=False, sep=';', encoding='utf-8-sig').encode('utf-8-sig')
+            save_csv_to_mongodb(csv, 'extracted_data.csv')
+
+            # Provide a download button for the CSV file
+            st.download_button(label="Download data as CSV",
+                               data=csv,
+                               file_name='extracted_data.csv',
+                               mime='text/csv')
+        else:
+            st.write("No detections or incorrect result format.")
+
+if __name__ == '__main__':
+    main()
