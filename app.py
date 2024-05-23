@@ -118,7 +118,7 @@ def determine_cable_type_from_table(image, box):
         return "Unknown"
 
 # Function to save the annotated image to MongoDB
-def save_image_to_mongodb(image, filename):
+def save_image_to_mongodb(image, filename, collection_name):
     if fs is None:
         st.error("Not connected to MongoDB. Cannot save image.")
         return
@@ -126,22 +126,22 @@ def save_image_to_mongodb(image, filename):
         # Convert the image to bytes
         image_bytes = cv2.imencode('.png', image)[1].tobytes()
         # Save the image to GridFS
-        with fs.new_file(filename=filename) as file:
+        with fs.new_file(filename=filename, collection=collection_name) as file:
             file.write(image_bytes)
-        st.success(f"Image '{filename}' saved to MongoDB successfully!")
+        st.success(f"Image '{filename}' saved to MongoDB collection '{collection_name}' successfully!")
     except Exception as e:
         st.error(f"Error saving image to MongoDB: {e}")
 
 # Function to save the CSV data to MongoDB
-def save_csv_to_mongodb(csv_data, filename):
+def save_csv_to_mongodb(csv_data, filename, collection_name):
     if fs is None:
         st.error("Not connected to MongoDB. Cannot save CSV.")
         return
     try:
         # Save the CSV data to GridFS
-        with fs.new_file(filename=filename) as file:
+        with fs.new_file(filename=filename, collection=collection_name) as file:
             file.write(csv_data)
-        st.success(f"CSV '{filename}' saved to MongoDB successfully!")
+        st.success(f"CSV '{filename}' saved to MongoDB collection '{collection_name}' successfully!")
     except Exception as e:
         st.error(f"Error saving CSV to MongoDB: {e}")
 
@@ -161,19 +161,8 @@ def main():
 
         results_list = detect_objects(image_cv2, model)
 
-        # Mapping of old class names to new class names
-        class_name_mapping = {
-            "0- Side1": "Side1",
-            "1- Side2": "Side2",
-            "2- LEONIPartNumber": "LEONIPartNumber",
-            "3- SupplierPartNumber": "SupplierPartNumber",
-            "4- Wiretype": "Wiretype",
-            "5- Length": "Length",
-            "6- TypeOfCableAssembly": "TypeOfCableAssembly"
-        }
-
         # Dictionary to store the extracted data
-        class_data = {new_name: [] for new_name in class_name_mapping.values()}
+        class_data = {}
 
         if results_list:
             for results in results_list:
@@ -182,16 +171,12 @@ def main():
                         if len(box) >= 4:
                             class_id = int(results.boxes.cls[i]) if len(results.boxes.cls) > i else -1
                             label = results.names[class_id] if class_id in results.names else "Unknown"
-                            new_label = class_name_mapping.get(label, label)
                             if label == '6- TypeOfCableAssembly':
                                 cable_type = determine_cable_type_from_table(image_cv2, box)
                                 text = cable_type
                             else:
                                 text = extract_text_from_region(image_cv2, box)
-                            if new_label in class_data:
-                                class_data[new_label].append(text)
-                            else:
-                                st.warning(f"Detected label '{label}' is not in the specified columns.")
+                            class_data[label] = text
                             cv2.rectangle(image_cv2, (int(box[0]), int(box[1])), (int(box[2]), int(box[3])), (0, 255, 0), 2)
 
             annotated_image = Image.fromarray(cv2.cvtColor(image_cv2, cv2.COLOR_BGR2RGB))
@@ -199,8 +184,6 @@ def main():
 
             # Create a DataFrame for the CSV export
             df = pd.DataFrame.from_dict(class_data, orient='index').transpose()
-            column_order = ['Side1', 'Side2', 'LEONIPartNumber', 'SupplierPartNumber', 'Wiretype', 'Length', 'TypeOfCableAssembly']
-            df = df[column_order]  # Reorder the columns
 
             # Display data in a table
             st.write("Extracted Data:")
@@ -215,11 +198,11 @@ def main():
             
             # Add button to save image to MongoDB
             if st.button("Save Image to MongoDB"):
-                save_image_to_mongodb(image_cv2, "annotated_image.png")
+                save_image_to_mongodb(image_cv2, "annotated_image.png", "images")
             
             # Add button to save CSV to MongoDB
             if st.button("Save CSV to MongoDB"):
-                save_csv_to_mongodb(csv, "extracted_data.csv")
+                save_csv_to_mongodb(csv, "extracted_data.csv", "csvf")
         else:
             st.write("No detections or incorrect result format.")
 
