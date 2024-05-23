@@ -7,6 +7,13 @@ import pytesseract
 import pandas as pd
 import os
 import requests
+from pymongo import MongoClient
+import gridfs
+
+# Configuration de MongoDB
+client = MongoClient("mongodb://localhost:27017/")  # Remplacez par votre URL MongoDB si nécessaire
+db = client["mydatabase"]
+fs = gridfs.GridFS(db)
 
 # URL du fichier modèle sur GitHub
 model_url = 'https://github.com/ibtiKH25/dataconvert/raw/main/TrainingModel.pt'
@@ -50,7 +57,6 @@ model = load_model(model_local_path)
 # Function to clean text by removing unwanted characters
 def clean_text(text):
     unwanted_chars = ['é', '°', 'è', 'à', 'ç', '<', '¢', '/', '\\']
-
     for char in unwanted_chars:
         text = text.replace(char, '')
     return text
@@ -98,6 +104,28 @@ def determine_cable_type_from_table(image, box):
     except Exception as e:
         st.error(f"Error determining cable type from table: {e}")
         return "Unknown"
+
+# Function to save the annotated image to MongoDB
+def save_image_to_mongodb(image, filename):
+    try:
+        # Convert the image to bytes
+        image_bytes = cv2.imencode('.png', image)[1].tobytes()
+        # Save the image to GridFS
+        with fs.new_file(filename=filename) as file:
+            file.write(image_bytes)
+        st.success(f"Image '{filename}' saved to MongoDB successfully!")
+    except Exception as e:
+        st.error(f"Error saving image to MongoDB: {e}")
+
+# Function to save the CSV data to MongoDB
+def save_csv_to_mongodb(csv_data, filename):
+    try:
+        # Save the CSV data to GridFS
+        with fs.new_file(filename=filename) as file:
+            file.write(csv_data)
+        st.success(f"CSV '{filename}' saved to MongoDB successfully!")
+    except Exception as e:
+        st.error(f"Error saving CSV to MongoDB: {e}")
 
 # Main function to run the Streamlit app
 def main():
@@ -151,6 +179,9 @@ def main():
             annotated_image = Image.fromarray(cv2.cvtColor(image_cv2, cv2.COLOR_BGR2RGB))
             st.image(annotated_image, caption='Annotated Image', use_column_width=True)
 
+            # Save annotated image to MongoDB
+            save_image_to_mongodb(image_cv2, 'annotated_image.png')
+
             # Create a DataFrame for the CSV export
             df = pd.DataFrame.from_dict(class_data, orient='index').transpose()
             column_order = ['Side1', 'Side2', 'LEONIPartNumber', 'SupplierPartNumber', 'Wiretype', 'Length', 'TypeOfCableAssembly']
@@ -160,8 +191,11 @@ def main():
             st.write("Extracted Data:")
             st.dataframe(df)
 
-            # Provide a download button for the CSV file
+            # Convert DataFrame to CSV and save to MongoDB
             csv = df.to_csv(index=False, sep=';', encoding='utf-8-sig').encode('utf-8-sig')
+            save_csv_to_mongodb(csv, 'extracted_data.csv')
+
+            # Provide a download button for the CSV file
             st.download_button(label="Download data as CSV",
                                data=csv,
                                file_name='extracted_data.csv',
