@@ -31,7 +31,6 @@ def download_model(url, local_path):
 download_model(model_url, model_local_path)
 
 # Configure the path to Tesseract OCR
-# En supposant que Tesseract OCR est installé via packages.txt
 pytesseract.pytesseract.tesseract_cmd = 'tesseract'
 
 # Load the YOLO model
@@ -47,6 +46,13 @@ def load_model(model_path):
         return None
 
 model = load_model(model_local_path)
+
+# Function to clean text by removing unwanted characters
+def clean_text(text):
+    unwanted_chars = ['é', '°', 'è', 'à', 'ç', ':']
+    for char in unwanted_chars:
+        text = text.replace(char, '')
+    return text
 
 # Function to detect objects in the image using the YOLO model
 def detect_objects(image, model):
@@ -66,6 +72,7 @@ def extract_text_from_region(image, box):
         x1, y1, x2, y2 = map(int, box[:4])
         cropped_image = image[y1:y2, x1:x2]
         text = pytesseract.image_to_string(cropped_image)
+        text = clean_text(text)  # Clean the extracted text
         return text.strip()
     except Exception as e:
         st.error(f"Error extracting text from region: {e}")
@@ -77,6 +84,7 @@ def determine_cable_type_from_table(image, box):
         x1, y1, x2, y2 = map(int, box[:4])
         table_region = image[y1:y2, x1:x2]
         text = pytesseract.image_to_string(table_region)
+        text = clean_text(text)  # Clean the extracted text
         lines = text.strip().split('\n')
         num_lines = len(lines)
         if num_lines == 5:
