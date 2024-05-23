@@ -9,15 +9,23 @@ import os
 import requests
 from pymongo import MongoClient, errors
 import gridfs
+import io
 
-# Configuration de MongoDB
-try:
-    client = MongoClient("mongodb://localhost:27017/")
-    db = client["mydatabase"]
-    fs = gridfs.GridFS(db)
-    st.success("Connected to MongoDB successfully!")
-except errors.ConnectionError as e:
-    st.error(f"Error connecting to MongoDB: {e}")
+# Configuration de MongoDB avec tentative de reconnexion
+def connect_to_mongodb(retries=5, delay=5):
+    for i in range(retries):
+        try:
+            client = MongoClient("mongodb://localhost:27017/")
+            db = client["mydatabase"]
+            fs = gridfs.GridFS(db)
+            st.success("Connected to MongoDB successfully!")
+            return fs
+        except errors.ConnectionError as e:
+            st.error(f"Error connecting to MongoDB (attempt {i + 1}/{retries}): {e}")
+            time.sleep(delay)
+    return None
+
+fs = connect_to_mongodb()
 
 # URL du fichier modèle sur GitHub
 model_url = 'https://github.com/ibtiKH25/dataconvert/raw/main/TrainingModel.pt'
@@ -111,6 +119,9 @@ def determine_cable_type_from_table(image, box):
 
 # Function to save the annotated image to MongoDB
 def save_image_to_mongodb(image, filename):
+    if fs is None:
+        st.error("Not connected to MongoDB. Cannot save image.")
+        return
     try:
         # Convert the image to bytes
         image_bytes = cv2.imencode('.png', image)[1].tobytes()
@@ -123,6 +134,9 @@ def save_image_to_mongodb(image, filename):
 
 # Function to save the CSV data to MongoDB
 def save_csv_to_mongodb(csv_data, filename):
+    if fs is None:
+        st.error("Not connected to MongoDB. Cannot save CSV.")
+        return
     try:
         # Save the CSV data to GridFS
         with fs.new_file(filename=filename) as file:
@@ -192,18 +206,18 @@ def main():
             st.write("Extracted Data:")
             st.dataframe(df)
 
-            # Convert DataFrame to CSV
-            csv = df.to_csv(index=False, sep=';', encoding='utf-8-sig').encode('utf-8-sig')
-
             # Provide a download button for the CSV file
+            csv = df.to_csv(index=False, sep=';', encoding='utf-8-sig').encode('utf-8-sig')
             st.download_button(label="Download data as CSV",
                                data=csv,
                                file_name='extracted_data.csv',
                                mime='text/csv')
 
-            # Provide a button to save the data to MongoDB
-            if st.button("Save data to MongoDB"):
+            # Add buttons to save image and CSV to MongoDB
+            if st.button("Save Image to MongoDB"):
                 save_image_to_mongodb(image_cv2, 'annotated_image.png')
+
+            if st.button("Save CSV to MongoDB"):
                 save_csv_to_mongodb(csv, 'extracted_data.csv')
         else:
             st.write("No detections or incorrect result format.")
