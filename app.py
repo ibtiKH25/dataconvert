@@ -31,7 +31,8 @@ def download_model(url, local_path):
 download_model(model_url, model_local_path)
 
 # Configure the path to Tesseract OCR
-pytesseract.pytesseract.tesseract_cmd = os.path.join(os.getcwd(), 'tesseract', 'tesseract.exe')
+# En supposant que Tesseract OCR est installé via packages.txt
+pytesseract.pytesseract.tesseract_cmd = 'tesseract'
 
 # Load the YOLO model
 @st.cache_data
