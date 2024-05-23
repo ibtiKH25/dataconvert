@@ -7,13 +7,17 @@ import pytesseract
 import pandas as pd
 import os
 import requests
-from pymongo import MongoClient
+from pymongo import MongoClient, errors
 import gridfs
 
 # Configuration de MongoDB
-client = MongoClient("mongodb://localhost:27017/")  # Remplacez par votre URL MongoDB si nécessaire
-db = client["mydatabase"]
-fs = gridfs.GridFS(db)
+try:
+    client = MongoClient("mongodb://localhost:27017/")
+    db = client["mydatabase"]
+    fs = gridfs.GridFS(db)
+    st.success("Connected to MongoDB successfully!")
+except errors.ConnectionError as e:
+    st.error(f"Error connecting to MongoDB: {e}")
 
 # URL du fichier modèle sur GitHub
 model_url = 'https://github.com/ibtiKH25/dataconvert/raw/main/TrainingModel.pt'
@@ -179,9 +183,6 @@ def main():
             annotated_image = Image.fromarray(cv2.cvtColor(image_cv2, cv2.COLOR_BGR2RGB))
             st.image(annotated_image, caption='Annotated Image', use_column_width=True)
 
-            # Save annotated image to MongoDB
-            save_image_to_mongodb(image_cv2, 'annotated_image.png')
-
             # Create a DataFrame for the CSV export
             df = pd.DataFrame.from_dict(class_data, orient='index').transpose()
             column_order = ['Side1', 'Side2', 'LEONIPartNumber', 'SupplierPartNumber', 'Wiretype', 'Length', 'TypeOfCableAssembly']
@@ -191,15 +192,19 @@ def main():
             st.write("Extracted Data:")
             st.dataframe(df)
 
-            # Convert DataFrame to CSV and save to MongoDB
+            # Convert DataFrame to CSV
             csv = df.to_csv(index=False, sep=';', encoding='utf-8-sig').encode('utf-8-sig')
-            save_csv_to_mongodb(csv, 'extracted_data.csv')
 
             # Provide a download button for the CSV file
             st.download_button(label="Download data as CSV",
                                data=csv,
                                file_name='extracted_data.csv',
                                mime='text/csv')
+
+            # Provide a button to save the data to MongoDB
+            if st.button("Save data to MongoDB"):
+                save_image_to_mongodb(image_cv2, 'annotated_image.png')
+                save_csv_to_mongodb(csv, 'extracted_data.csv')
         else:
             st.write("No detections or incorrect result format.")
 
