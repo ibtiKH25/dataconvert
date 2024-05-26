@@ -5,29 +5,61 @@ import cv2
 from ultralytics import YOLO
 import pytesseract
 import pandas as pd
+import os
+import requests
+
+# URL du fichier modèle sur GitHub
+model_url = 'https://github.com/ibtiKH25/dataconvert/raw/main/TrainingModel.pt'
+
+# Chemin local où le fichier modèle sera sauvegardé
+model_local_path = 'TrainingModel.pt'
+
+# Téléchargement du modèle depuis GitHub
+@st.cache_data
+def download_model(url, local_path):
+    if not os.path.exists(local_path):
+        st.write(f"Downloading model from: {url}")
+        response = requests.get(url)
+        with open(local_path, 'wb') as file:
+            file.write(response.content)
+        st.write("Model downloaded successfully")
+    else:
+        st.write("Model already exists locally")
+    return local_path
+
+# Télécharger le modèle
+download_model(model_url, model_local_path)
 
 # Configure the path to Tesseract OCR
-pytesseract.pytesseract.tesseract_cmd = r'C:/Program Files/Tesseract-OCR/tesseract.exe'
-
-# Initialize YOLO model path
-model_path = 'C:/Users/User/Desktop/pfe/yolov8/myenv/TrainingModel.pt'
+pytesseract.pytesseract.tesseract_cmd = 'tesseract'
 
 # Load the YOLO model
 @st.cache_data
 def load_model(model_path):
     try:
+        st.write(f"Loading model from: {model_path}")
         model = YOLO(model_path)
+        st.write("Model loaded successfully")
         return model
     except Exception as e:
         st.error(f"Error loading model: {e}")
         return None
 
-model = load_model(model_path)
+model = load_model(model_local_path)
 
+# Function to clean text by removing unwanted characters
+def clean_text(text):
+    unwanted_chars = ['é', '°', 'è', 'à', 'ç', '<', '¢', '/', '\\']
 
+    for char in unwanted_chars:
+        text = text.replace(char, '')
+    return text
 
 # Function to detect objects in the image using the YOLO model
 def detect_objects(image, model):
+    if model is None:
+        st.error("Model is not loaded. Cannot perform detection.")
+        return None
     try:
         results = model.predict(image)
         return results
@@ -41,6 +73,7 @@ def extract_text_from_region(image, box):
         x1, y1, x2, y2 = map(int, box[:4])
         cropped_image = image[y1:y2, x1:x2]
         text = pytesseract.image_to_string(cropped_image)
+        text = clean_text(text)  # Clean the extracted text
         return text.strip()
     except Exception as e:
         st.error(f"Error extracting text from region: {e}")
@@ -52,6 +85,7 @@ def determine_cable_type_from_table(image, box):
         x1, y1, x2, y2 = map(int, box[:4])
         table_region = image[y1:y2, x1:x2]
         text = pytesseract.image_to_string(table_region)
+        text = clean_text(text)  # Clean the extracted text
         lines = text.strip().split('\n')
         num_lines = len(lines)
         if num_lines == 5:
