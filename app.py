@@ -125,12 +125,8 @@ def main():
             "5- Length": "Length",
             "6- TypeOfCableAssembly": "TypeOfCableAssembly"
         }
-        # Calculate the number of rows
-        num_rows = len(class_data[next(iter(class_data))])
-        # Dictionary to store the extracted data
-        
-        class_data['Pigtail'] = ['Non'] + [''] * (num_rows - 1)
-        class_data['HV'] = ['Non'] + [''] * (num_rows - 1)
+
+        class_data = {new_name: [] for new_name in class_name_mapping.values()}
 
         if results_list:
             for results in results_list:
@@ -150,10 +146,12 @@ def main():
                             else:
                                 st.warning(f"Detected label '{label}' is not in the specified columns.")
                             cv2.rectangle(image_cv2, (int(box[0]), int(box[1])), (int(box[2]), int(box[3])), (0, 255, 0), 2)
-            num_rows = len(class_data[next(iter(class_data))])
-            class_data = {new_name: [] for new_name in class_name_mapping.values()}
-            class_data['Pigtail'] = ['Non'] * num_rows
-            class_data['HV'] = ['Non'] * num_rows
+      if class_data:
+        num_rows = len(next(iter(class_data.values())))
+        # Dictionary to store the extracted data
+        
+           class_data['Pigtail'] = ['Non'] + [''] * (num_rows - 1)
+           class_data['HV'] = ['Non'] + [''] * (num_rows - 1)
 
             annotated_image = Image.fromarray(cv2.cvtColor(image_cv2, cv2.COLOR_BGR2RGB))
             st.image(annotated_image, caption='Annotated Image', use_column_width=True)
