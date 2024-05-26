@@ -146,8 +146,8 @@ def main():
                             else:
                                 st.warning(f"Detected label '{label}' is not in the specified columns.")
                             cv2.rectangle(image_cv2, (int(box[0]), int(box[1])), (int(box[2]), int(box[3])), (0, 255, 0), 2)
-      if class_data:
-        num_rows = len(next(iter(class_data.values())))
+          if class_data:
+           num_rows = len(next(iter(class_data.values())))
         # Dictionary to store the extracted data
         
            class_data['Pigtail'] = ['Non'] + [''] * (num_rows - 1)
