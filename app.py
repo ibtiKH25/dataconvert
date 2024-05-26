@@ -151,6 +151,7 @@ def main():
                                 st.warning(f"Detected label '{label}' is not in the specified columns.")
                             cv2.rectangle(image_cv2, (int(box[0]), int(box[1])), (int(box[2]), int(box[3])), (0, 255, 0), 2)
             num_rows = len(class_data[next(iter(class_data))])
+            class_data = {new_name: [] for new_name in class_name_mapping.values()}
             class_data['Pigtail'] = ['Non'] * num_rows
             class_data['HV'] = ['Non'] * num_rows
 
