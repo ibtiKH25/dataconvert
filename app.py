@@ -5,79 +5,29 @@ import cv2
 from ultralytics import YOLO
 import pytesseract
 import pandas as pd
-import os
-import requests
-from pymongo import MongoClient, errors
-import gridfs
-import time
-
-# Configuration de MongoDB avec tentative de reconnexion
-def connect_to_mongodb(retries=5, delay=5):
-    for i in range(retries):
-        try:
-            client = MongoClient("mongodb://localhost:27017/")
-            db = client["mydatabase"]
-            fs = gridfs.GridFS(db)
-            st.success("Connected to MongoDB successfully!")
-            return fs
-        except errors.ConnectionError as e:
-            st.error(f"Error connecting to MongoDB (attempt {i + 1}/{retries}): {e}")
-            time.sleep(delay)
-    return None
-
-fs = connect_to_mongodb()
-
-# URL du fichier modèle sur GitHub
-model_url = 'https://github.com/ibtiKH25/dataconvert/raw/main/TrainingModel.pt'
-
-# Chemin local où le fichier modèle sera sauvegardé
-model_local_path = 'TrainingModel.pt'
-
-# Téléchargement du modèle depuis GitHub
-@st.cache_data
-def download_model(url, local_path):
-    if not os.path.exists(local_path):
-        st.write(f"Downloading model from: {url}")
-        response = requests.get(url)
-        with open(local_path, 'wb') as file:
-            file.write(response.content)
-        st.write("Model downloaded successfully")
-    else:
-        st.write("Model already exists locally")
-    return local_path
-
-# Télécharger le modèle
-download_model(model_url, model_local_path)
 
 # Configure the path to Tesseract OCR
-pytesseract.pytesseract.tesseract_cmd = 'tesseract'
+pytesseract.pytesseract.tesseract_cmd = r'C:/Program Files/Tesseract-OCR/tesseract.exe'
+
+# Initialize YOLO model path
+model_path = 'C:/Users/User/Desktop/pfe/yolov8/myenv/TrainingModel.pt'
 
 # Load the YOLO model
 @st.cache_data
 def load_model(model_path):
     try:
-        st.write(f"Loading model from: {model_path}")
         model = YOLO(model_path)
-        st.write("Model loaded successfully")
         return model
     except Exception as e:
         st.error(f"Error loading model: {e}")
         return None
 
-model = load_model(model_local_path)
+model = load_model(model_path)
 
-# Function to clean text by removing unwanted characters
-def clean_text(text):
-    unwanted_chars = ['é', '°', 'è', 'à', 'ç', '<', '¢', '/', '\\']
-    for char in unwanted_chars:
-        text = text.replace(char, '')
-    return text
+
 
 # Function to detect objects in the image using the YOLO model
 def detect_objects(image, model):
-    if model is None:
-        st.error("Model is not loaded. Cannot perform detection.")
-        return None
     try:
         results = model.predict(image)
         return results
@@ -91,7 +41,6 @@ def extract_text_from_region(image, box):
         x1, y1, x2, y2 = map(int, box[:4])
         cropped_image = image[y1:y2, x1:x2]
         text = pytesseract.image_to_string(cropped_image)
-        text = clean_text(text)  # Clean the extracted text
         return text.strip()
     except Exception as e:
         st.error(f"Error extracting text from region: {e}")
@@ -103,7 +52,6 @@ def determine_cable_type_from_table(image, box):
         x1, y1, x2, y2 = map(int, box[:4])
         table_region = image[y1:y2, x1:x2]
         text = pytesseract.image_to_string(table_region)
-        text = clean_text(text)  # Clean the extracted text
         lines = text.strip().split('\n')
         num_lines = len(lines)
         if num_lines == 5:
@@ -116,34 +64,6 @@ def determine_cable_type_from_table(image, box):
     except Exception as e:
         st.error(f"Error determining cable type from table: {e}")
         return "Unknown"
-
-# Function to save the annotated image to MongoDB
-def save_image_to_mongodb(image, filename, collection_name):
-    if fs is None:
-        st.error("Not connected to MongoDB. Cannot save image.")
-        return
-    try:
-        # Convert the image to bytes
-        image_bytes = cv2.imencode('.png', image)[1].tobytes()
-        # Save the image to GridFS
-        with fs.new_file(filename=filename, collection=collection_name) as file:
-            file.write(image_bytes)
-        st.success(f"Image '{filename}' saved to MongoDB collection '{collection_name}' successfully!")
-    except Exception as e:
-        st.error(f"Error saving image to MongoDB: {e}")
-
-# Function to save the CSV data to MongoDB
-def save_csv_to_mongodb(csv_data, filename, collection_name):
-    if fs is None:
-        st.error("Not connected to MongoDB. Cannot save CSV.")
-        return
-    try:
-        # Save the CSV data to GridFS
-        with fs.new_file(filename=filename, collection=collection_name) as file:
-            file.write(csv_data)
-        st.success(f"CSV '{filename}' saved to MongoDB collection '{collection_name}' successfully!")
-    except Exception as e:
-        st.error(f"Error saving CSV to MongoDB: {e}")
 
 # Main function to run the Streamlit app
 def main():
@@ -161,8 +81,19 @@ def main():
 
         results_list = detect_objects(image_cv2, model)
 
+        # Mapping of old class names to new class names
+        class_name_mapping = {
+            "0- Side1": "Side1",
+            "1- Side2": "Side2",
+            "2- LEONIPartNumber": "LEONIPartNumber",
+            "3- SupplierPartNumber": "SupplierPartNumber",
+            "4- Wiretype": "Wiretype",
+            "5- Length": "Length",
+            "6- TypeOfCableAssembly": "TypeOfCableAssembly"
+        }
+
         # Dictionary to store the extracted data
-        class_data = {}
+        class_data = {new_name: [] for new_name in class_name_mapping.values()}
 
         if results_list:
             for results in results_list:
@@ -171,12 +102,16 @@ def main():
                         if len(box) >= 4:
                             class_id = int(results.boxes.cls[i]) if len(results.boxes.cls) > i else -1
                             label = results.names[class_id] if class_id in results.names else "Unknown"
+                            new_label = class_name_mapping.get(label, label)
                             if label == '6- TypeOfCableAssembly':
                                 cable_type = determine_cable_type_from_table(image_cv2, box)
                                 text = cable_type
                             else:
                                 text = extract_text_from_region(image_cv2, box)
-                            class_data[label] = text
+                            if new_label in class_data:
+                                class_data[new_label].append(text)
+                            else:
+                                st.warning(f"Detected label '{label}' is not in the specified columns.")
                             cv2.rectangle(image_cv2, (int(box[0]), int(box[1])), (int(box[2]), int(box[3])), (0, 255, 0), 2)
 
             annotated_image = Image.fromarray(cv2.cvtColor(image_cv2, cv2.COLOR_BGR2RGB))
@@ -184,6 +119,8 @@ def main():
 
             # Create a DataFrame for the CSV export
             df = pd.DataFrame.from_dict(class_data, orient='index').transpose()
+            column_order = ['Side1', 'Side2', 'LEONIPartNumber', 'SupplierPartNumber', 'Wiretype', 'Length', 'TypeOfCableAssembly']
+            df = df[column_order]  # Reorder the columns
 
             # Display data in a table
             st.write("Extracted Data:")
@@ -195,14 +132,6 @@ def main():
                                data=csv,
                                file_name='extracted_data.csv',
                                mime='text/csv')
-            
-            # Add button to save image to MongoDB
-            if st.button("Save Image to MongoDB"):
-                save_image_to_mongodb(image_cv2, "annotated_image.png", "images")
-            
-            # Add button to save CSV to MongoDB
-            if st.button("Save CSV to MongoDB"):
-                save_csv_to_mongodb(csv, "extracted_data.csv", "csvf")
         else:
             st.write("No detections or incorrect result format.")
 
