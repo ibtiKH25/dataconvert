@@ -127,7 +127,7 @@ def main():
         }
 
         # Dictionary to store the extracted data
-        class_data = {new_name: [] for new_name in class_name_mapping.values()}
+        
         class_data['Pigtail'] = ['Non'] + [''] * (num_rows - 1)
         class_data['HV'] = ['Non'] + [''] * (num_rows - 1)
 
