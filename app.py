@@ -7,6 +7,15 @@ import pytesseract
 import pandas as pd
 import os
 import requests
+from pymongo import MongoClient
+import gridfs
+import io
+
+# MongoDB connection
+client = MongoClient("mongodb://localhost:27017/")
+db = client["data_converter"]
+fs = gridfs.GridFS(db)
+
 
 # URL du fichier modèle sur GitHub
 model_url = 'https://github.com/ibtiKH25/dataconvert/raw/main/TrainingModel.pt'
@@ -106,6 +115,8 @@ def main():
     uploaded_file = st.file_uploader("Choose an image to analyze...", type=["jpg", "png", "jpeg", "pdf"])
     if uploaded_file is not None:
         try:
+            file_id = fs.put(uploaded_file, filename=uploaded_file.name)
+            st.write(f"Image saved to database with ID: {file_id}")            
             image = Image.open(uploaded_file)
             image_np = np.array(image.convert('RGB'))
             image_cv2 = cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR)
@@ -163,7 +174,11 @@ def main():
             st.dataframe(df)
 
             # Provide a download button for the CSV file
+            csv_buffer = io.StringIO()
             csv = df.to_csv(index=False, sep=';', encoding='utf-8-sig').encode('utf-8-sig')
+            st.download_button(label="Download data as CSV",
+            csv_id = fs.put(csv_data, filename=f"extracted_data_{file_id}.csv")
+            st.write(f"CSV file saved to database with ID: {csv_id}")
             st.download_button(label="Download data as CSV",
                                data=csv,
                                file_name='extracted_data.csv',
