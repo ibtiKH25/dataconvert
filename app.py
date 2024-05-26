@@ -49,7 +49,7 @@ model = load_model(model_local_path)
 
 # Function to clean text by removing unwanted characters
 def clean_text(text):
-    unwanted_chars = ['é', '°', 'è', 'à', 'ç', '<', '¢', '/', '\\']
+    unwanted_chars = ['é', '°', 'è', 'à', 'ç', '<', '¢', '/', '\\' , '|' , '>']
 
     for char in unwanted_chars:
         text = text.replace(char, '')
@@ -88,7 +88,7 @@ def determine_cable_type_from_table(image, box):
         text = clean_text(text)  # Clean the extracted text
         lines = text.strip().split('\n')
         num_lines = len(lines)
-        if num_lines == 5:
+        if num_lines == 4 or num_lines == 5:
             cable_type = 'Ethernet'
         elif num_lines > 5:
             cable_type = 'Hsd'
@@ -128,7 +128,7 @@ def main():
 
         # Dictionary to store the extracted data
         class_data = {new_name: [] for new_name in class_name_mapping.values()}
-
+         
         if results_list:
             for results in results_list:
                 if hasattr(results, 'boxes') and results.boxes is not None:
@@ -147,13 +147,15 @@ def main():
                             else:
                                 st.warning(f"Detected label '{label}' is not in the specified columns.")
                             cv2.rectangle(image_cv2, (int(box[0]), int(box[1])), (int(box[2]), int(box[3])), (0, 255, 0), 2)
+            class_data['Pigtail'] = ['Non']
+            class_data['HV'] = ['Non']
 
             annotated_image = Image.fromarray(cv2.cvtColor(image_cv2, cv2.COLOR_BGR2RGB))
             st.image(annotated_image, caption='Annotated Image', use_column_width=True)
 
             # Create a DataFrame for the CSV export
             df = pd.DataFrame.from_dict(class_data, orient='index').transpose()
-            column_order = ['Side1', 'Side2', 'LEONIPartNumber', 'SupplierPartNumber', 'Wiretype', 'Length', 'TypeOfCableAssembly']
+            column_order = ['Side1', 'Side2', 'LEONIPartNumber', 'SupplierPartNumber', 'Wiretype', 'Length', 'TypeOfCableAssembly' ,'Pigtail', 'HV']
             df = df[column_order]  # Reorder the columns
 
             # Display data in a table
