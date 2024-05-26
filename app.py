@@ -149,9 +149,9 @@ def main():
                             else:
                                 st.warning(f"Detected label '{label}' is not in the specified columns.")
                             cv2.rectangle(image_cv2, (int(box[0]), int(box[1])), (int(box[2]), int(box[3])), (0, 255, 0), 2)
-    num_rows = len(class_data[next(iter(class_data))])
-    class_data['Pigtail'] = ['Non'] * num_rows
-    class_data['HV'] = ['Non'] * num_rows
+            num_rows = len(class_data[next(iter(class_data))])
+            class_data['Pigtail'] = ['Non'] * num_rows
+            class_data['HV'] = ['Non'] * num_rows
 
             annotated_image = Image.fromarray(cv2.cvtColor(image_cv2, cv2.COLOR_BGR2RGB))
             st.image(annotated_image, caption='Annotated Image', use_column_width=True)
