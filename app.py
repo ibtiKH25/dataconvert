@@ -125,7 +125,8 @@ def main():
             "5- Length": "Length",
             "6- TypeOfCableAssembly": "TypeOfCableAssembly"
         }
-
+        # Calculate the number of rows
+        num_rows = len(class_data[next(iter(class_data))])
         # Dictionary to store the extracted data
         
         class_data['Pigtail'] = ['Non'] + [''] * (num_rows - 1)
