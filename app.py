@@ -126,53 +126,59 @@ def main():
             "6- TypeOfCableAssembly": "TypeOfCableAssembly"
         }
 
-        class_data = {new_name: [] for new_name in class_name_mapping.values()}
+  # Dictionary to store the extracted data
+class_data = {new_name: [] for new_name in class_name_mapping.values()}
 
-        if results_list:
-            for results in results_list:
-                if hasattr(results, 'boxes') and results.boxes is not None:
-                    for i, box in enumerate(results.boxes.xyxy):
-                        if len(box) >= 4:
-                            class_id = int(results.boxes.cls[i]) if len(results.boxes.cls) > i else -1
-                            label = results.names[class_id] if class_id in results.names else "Unknown"
-                            new_label = class_name_mapping.get(label, label)
-                            if label == '6- TypeOfCableAssembly':
-                                cable_type = determine_cable_type_from_table(image_cv2, box)
-                                text = cable_type
-                            else:
-                                text = extract_text_from_region(image_cv2, box)
-                            if new_label in class_data:
-                                class_data[new_label].append(text)
-                            else:
-                                st.warning(f"Detected label '{label}' is not in the specified columns.")
-                            cv2.rectangle(image_cv2, (int(box[0]), int(box[1])), (int(box[2]), int(box[3])), (0, 255, 0), 2)
-          if class_data:
-           num_rows = len(next(iter(class_data.values())))
-        # Dictionary to store the extracted data
-        
-           class_data['Pigtail'] = ['Non'] + [''] * (num_rows - 1)
-           class_data['HV'] = ['Non'] + [''] * (num_rows - 1)
+if results_list:
+    for results in results_list:
+        if hasattr(results, 'boxes') and results.boxes is not None:
+            for i, box in enumerate(results.boxes.xyxy):
+                if len(box) >= 4:
+                    class_id = int(results.boxes.cls[i]) if len(results.boxes.cls) > i else -1
+                    label = results.names[class_id] if class_id in results.names else "Unknown"
+                    new_label = class_name_mapping.get(label, label)
+                    if label == '6- TypeOfCableAssembly':
+                        cable_type = determine_cable_type_from_table(image_cv2, box)
+                        text = cable_type
+                    else:
+                        text = extract_text_from_region(image_cv2, box)
+                    if new_label in class_data:
+                        class_data[new_label].append(text)
+                    else:
+                        st.warning(f"Detected label '{label}' is not in the specified columns.")
+                    cv2.rectangle(image_cv2, (int(box[0]), int(box[1])), (int(box[2]), int(box[3])), (0, 255, 0), 2)
 
-            annotated_image = Image.fromarray(cv2.cvtColor(image_cv2, cv2.COLOR_BGR2RGB))
-            st.image(annotated_image, caption='Annotated Image', use_column_width=True)
+    # Ensure we have a non-empty class_data before calculating num_rows
+    if class_data:
+        num_rows = len(next(iter(class_data.values())))
 
-            # Create a DataFrame for the CSV export
-            df = pd.DataFrame.from_dict(class_data, orient='index').transpose()
-            column_order = ['Side1', 'Side2', 'LEONIPartNumber', 'SupplierPartNumber', 'Wiretype', 'Length', 'TypeOfCableAssembly', 'Pigtail', 'HV']
-            df = df[column_order]  # Reorder the columns
+        # Add default values for the new columns
+        class_data['Pigtail'] = ['Non'] + [''] * (num_rows - 1)
+        class_data['HV'] = ['Non'] + [''] * (num_rows - 1)
 
-            # Display data in a table
-            st.write("Extracted Data:")
-            st.dataframe(df)
+        annotated_image = Image.fromarray(cv2.cvtColor(image_cv2, cv2.COLOR_BGR2RGB))
+        st.image(annotated_image, caption='Annotated Image', use_column_width=True)
 
-            # Provide a download button for the CSV file
-            csv = df.to_csv(index=False, sep=';', encoding='utf-8-sig').encode('utf-8-sig')
-            st.download_button(label="Download data as CSV",
-                               data=csv,
-                               file_name='extracted_data.csv',
-                               mime='text/csv')
-        else:
-            st.write("No detections or incorrect result format.")
+        # Create a DataFrame for the CSV export
+        df = pd.DataFrame.from_dict(class_data, orient='index').transpose()
+        column_order = ['Side1', 'Side2', 'LEONIPartNumber', 'SupplierPartNumber', 'Wiretype', 'Length', 'TypeOfCableAssembly', 'Pigtail', 'HV']
+        df = df[column_order]  # Reorder the columns
+
+        # Display data in a table
+        st.write("Extracted Data:")
+        st.dataframe(df)
+
+        # Provide a download button for the CSV file
+        csv = df.to_csv(index=False, sep=';', encoding='utf-8-sig').encode('utf-8-sig')
+        st.download_button(label="Download data as CSV",
+                           data=csv,
+                           file_name='extracted_data.csv',
+                           mime='text/csv')
+    else:
+        st.write("No data to process.")
+else:
+    st.write("No detections or incorrect result format.")
+
 
 if __name__ == '__main__':
     main()
