@@ -11,7 +11,7 @@ from pymongo import MongoClient
 import io
 
 # MongoDB connection
-client = MongoClient("mongodb://localhost:27017")
+client = MongoClient("mongodb://localhost:27017/")
 db = client["data_converter"]
 collection = db["files"]
 
@@ -57,7 +57,6 @@ model = load_model(model_local_path)
 # Function to clean text by removing unwanted characters
 def clean_text(text):
     unwanted_chars = ['é', '°', 'è', 'à', 'ç', '<', '¢', '/', '\\' , '|' , '>']
-
     for char in unwanted_chars:
         text = text.replace(char, '')
     return text
