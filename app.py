@@ -23,9 +23,8 @@ def download_model(url, local_path):
         response = requests.get(url)
         with open(local_path, 'wb') as file:
             file.write(response.content)
-        st.write("Model downloaded successfully")
-    else:
-        st.write("Model already exists locally")
+        
+
     return local_path
 
 # Télécharger le modèle
@@ -40,7 +39,7 @@ def load_model(model_path):
     try:
         st.write(f"Loading model from: {model_path}")
         model = YOLO(model_path)
-        st.write("Model loaded successfully")
+        
         return model
     except Exception as e:
         st.error(f"Error loading model: {e}")
