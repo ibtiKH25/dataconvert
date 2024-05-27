@@ -53,7 +53,7 @@ model = load_model(model_local_path)
 
 # Function to clean text by removing unwanted characters
 def clean_text(text):
-    unwanted_chars = ['é', '°', 'è', 'à', 'ç', '<', '¢', '/', '\\' , '|' , '>']
+    unwanted_chars = ['é', '°', 'è', 'à', 'ç', '<', '¢', '/', '\\', '|', '>']
     for char in unwanted_chars:
         text = text.replace(char, '')
     return text
@@ -107,10 +107,10 @@ def add_custom_css():
     st.markdown("""
     <style>
     .main {
-        background-color: #f0f2f6;
+        background-color: #f0f4f7;
     }
     .stButton>button {
-        background-color: #4CAF50;
+        background-color: #007BFF;
         color: white;
         border: none;
         padding: 10px 24px;
@@ -123,18 +123,19 @@ def add_custom_css():
         border-radius: 12px;
     }
     .stTextInput>div>div>input {
-        border: 2px solid #4CAF50;
+        border: 2px solid #007BFF;
         padding: 5px;
         border-radius: 10px;
     }
     .stTextInput>div>label {
         font-weight: bold;
+        color: #007BFF;
     }
-    .stMarkdown h1 {
-        color: #4CAF50;
+    .stMarkdown h1, .stMarkdown h2, .stMarkdown h3, .stMarkdown h4, .stMarkdown h5, .stMarkdown h6 {
+        color: #007BFF;
     }
     .stDataFrame>div {
-        border: 2px solid #4CAF50;
+        border: 2px solid #007BFF;
         border-radius: 10px;
     }
     </style>
