@@ -7,6 +7,7 @@ from PIL import Image
 def create_directory(directory):
     if not os.path.exists(directory):
         os.makedirs(directory)
+    st.write(f"Checked/created directory: {directory}")
 
 # Function to list available directories
 def list_subdirectories(directory):
@@ -34,10 +35,10 @@ def main():
     st.title('View Saved Files')
 
     # Ensure the 'Historique' directory exists
-    create_directory('Historique')
+    base_directory = 'Historique'
+    create_directory(base_directory)
     st.write("Created/Checked 'Historique' directory")
 
-    base_directory = 'Historique'
     subdirectories = list_subdirectories(base_directory)
     st.write(f"Subdirectories: {subdirectories}")
 
