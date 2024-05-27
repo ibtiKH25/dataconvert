@@ -145,7 +145,7 @@ def main():
     add_custom_css()
     
     st.sidebar.title("Navigation")
-    page = st.sidebar.selectbox("Select a page", ["Upload and Process", "View Saved Data"])
+    page = st.sidebar.selectbox("Select a page", ["Upload and Process", "Historique"])
 
     if page == "Upload and Process":
         st.title('Data Converter LEONI \n Convert Technical Drawings with Accuracy and Ease')
