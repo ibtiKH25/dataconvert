@@ -11,7 +11,7 @@ from pymongo import MongoClient
 import io
 
 # MongoDB connection
-client = MongoClient("mongodb://localhost:27017/")
+client = MongoClient("mongodb://localhost:27017")
 db = client["data_converter"]
 collection = db["files"]
 
