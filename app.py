@@ -52,7 +52,7 @@ model = load_model(model_local_path)
 
 # Function to clean text by removing unwanted characters
 def clean_text(text):
-    unwanted_chars = ['é', '°', 'è', 'à', 'ç', '<', '¢', '/', '\\', '|', '>']
+    unwanted_chars = ['é', '°', 'è', 'à', 'ç', '<', '¢', '/', '\\', '|', '>' ,'--' , '__' , '^' ,'^^' , '<<' , '>>' , '@' , '@@' , '&', '&&' ,'{' , '}']
     for char in unwanted_chars:
         text = text.replace(char, '')
     return text
