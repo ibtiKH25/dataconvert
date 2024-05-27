@@ -168,12 +168,12 @@ def main():
             column_order = ['Side1', 'Side2', 'LEONIPartNumber', 'SupplierPartNumber', 'Wiretype', 'Length', 'TypeOfCableAssembly' ,'Pigtail', 'HV']
             df = df[column_order]  # Reorder the columns
             df.to_csv(csv_file_path, index=False, sep=';', encoding='utf-8-sig')
-            st.success(f"CSV file saved at {csv_file_path}")
+            
 
             # Save the annotated image to the unique directory
             image_file_path = os.path.join(unique_dir, 'annotated_image.png')
             annotated_image.save(image_file_path)
-            st.success(f"Annotated image saved at {image_file_path}")
+           
 
             # Provide download buttons
             st.download_button(label="Download data as CSV",
