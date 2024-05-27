@@ -142,7 +142,7 @@ def add_custom_css():
 def main():
     add_custom_css()
     
-    st.sidebar.title("Navigation")
+    st.sidebar.title("Menu")
     page = st.sidebar.selectbox("Select a page", ["Convert Data", "Historique"])
 
     if page == "Convert Data":
