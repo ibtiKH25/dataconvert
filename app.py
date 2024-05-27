@@ -9,6 +9,9 @@ import os
 import requests
 import glob
 
+# Set the page configuration
+st.experimental_set_page_config(page_title="Data Converter LEONI", layout="wide")
+
 # URL du fichier modèle sur GitHub
 model_url = 'https://github.com/ibtiKH25/dataconvert/raw/main/TrainingModel.pt'
 
@@ -101,8 +104,6 @@ def determine_cable_type_from_table(image, box):
 
 # Main function to run the Streamlit app
 def main():
-    st.experimental_set_page_config(page_title="Data Converter LEONI", layout="wide")
-
     st.sidebar.title("Navigation")
     page = st.sidebar.selectbox("Select a page", ["Upload and Process", "View Saved Data"])
 
