@@ -7,13 +7,6 @@ import pytesseract
 import pandas as pd
 import os
 import requests
-from pymongo import MongoClient
-import io
-
-# MongoDB local connection
-client = MongoClient("mongodb://localhost:27017/")
-db = client["data_converter"]
-collection = db["files"]
 
 # URL du fichier modèle sur GitHub
 model_url = 'https://github.com/ibtiKH25/dataconvert/raw/main/TrainingModel.pt'
@@ -56,7 +49,8 @@ model = load_model(model_local_path)
 
 # Function to clean text by removing unwanted characters
 def clean_text(text):
-    unwanted_chars = ['é', '°', 'è', 'à', 'ç', '<', '¢', '/', '\\', '|', '>']
+    unwanted_chars = ['é', '°', 'è', 'à', 'ç', '<', '¢', '/', '\\' , '|' , '>']
+
     for char in unwanted_chars:
         text = text.replace(char, '')
     return text
@@ -112,12 +106,7 @@ def main():
     uploaded_file = st.file_uploader("Choose an image to analyze...", type=["jpg", "png", "jpeg", "pdf"])
     if uploaded_file is not None:
         try:
-            # Save the uploaded image to MongoDB
-            image_bytes = uploaded_file.read()
-            file_id = collection.insert_one({"filename": uploaded_file.name, "file": image_bytes}).inserted_id
-            st.write(f"Image saved to database with ID: {file_id}")
-
-            image = Image.open(io.BytesIO(image_bytes))
+            image = Image.open(uploaded_file)
             image_np = np.array(image.convert('RGB'))
             image_cv2 = cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR)
         except Exception as e:
@@ -139,7 +128,7 @@ def main():
 
         # Dictionary to store the extracted data
         class_data = {new_name: [] for new_name in class_name_mapping.values()}
-
+         
         if results_list:
             for results in results_list:
                 if hasattr(results, 'boxes') and results.boxes is not None:
@@ -166,23 +155,17 @@ def main():
 
             # Create a DataFrame for the CSV export
             df = pd.DataFrame.from_dict(class_data, orient='index').transpose()
-            column_order = ['Side1', 'Side2', 'LEONIPartNumber', 'SupplierPartNumber', 'Wiretype', 'Length', 'TypeOfCableAssembly', 'Pigtail', 'HV']
+            column_order = ['Side1', 'Side2', 'LEONIPartNumber', 'SupplierPartNumber', 'Wiretype', 'Length', 'TypeOfCableAssembly' ,'Pigtail', 'HV']
             df = df[column_order]  # Reorder the columns
 
             # Display data in a table
             st.write("Extracted Data:")
             st.dataframe(df)
 
-           # Convert DataFrame to CSV and save to MongoDB
-            csv_buffer = io.StringIO()
-            df.to_csv(csv_buffer, index=False, sep=';', encoding='utf-8-sig')
-            csv_data = csv_buffer.getvalue().encode('utf-8-sig')
-            csv_id = collection.insert_one({"filename": f"extracted_data_{file_id}.csv", "file": csv_data}).inserted_id
-            st.write(f"CSV file saved to database with ID: {csv_id}")
-
             # Provide a download button for the CSV file
+            csv = df.to_csv(index=False, sep=';', encoding='utf-8-sig').encode('utf-8-sig')
             st.download_button(label="Download data as CSV",
-                               data=csv_data,
+                               data=csv,
                                file_name='extracted_data.csv',
                                mime='text/csv')
         else:
