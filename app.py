@@ -99,6 +99,11 @@ def determine_cable_type_from_table(image, box):
         st.error(f"Error determining cable type from table: {e}")
         return "Unknown"
 
+# Function to create a directory if it doesn't exist
+def create_directory(directory):
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
 # Main function to run the Streamlit app
 def main():
     st.title('Data Converter LEONI \n Convert Technical Drawings with Accuracy and Ease')
@@ -162,12 +167,30 @@ def main():
             st.write("Extracted Data:")
             st.dataframe(df)
 
-            # Provide a download button for the CSV file
-            csv = df.to_csv(index=False, sep=';', encoding='utf-8-sig').encode('utf-8-sig')
+            # Save the CSV file to the specified directory
+            csv_directory = 'csv_files'
+            create_directory(csv_directory)
+            csv_file_path = os.path.join(csv_directory, 'extracted_data.csv')
+            df.to_csv(csv_file_path, index=False, sep=';', encoding='utf-8-sig')
+            st.success(f"CSV file saved at {csv_file_path}")
+
+            # Save the annotated image
+            image_directory = 'annotated_images'
+            create_directory(image_directory)
+            image_file_path = os.path.join(image_directory, 'annotated_image.png')
+            annotated_image.save(image_file_path)
+            st.success(f"Annotated image saved at {image_file_path}")
+
+            # Provide download buttons
             st.download_button(label="Download data as CSV",
-                               data=csv,
+                               data=df.to_csv(index=False, sep=';', encoding='utf-8-sig').encode('utf-8-sig'),
                                file_name='extracted_data.csv',
                                mime='text/csv')
+            with open(image_file_path, 'rb') as f:
+                st.download_button(label="Download Annotated Image",
+                                   data=f,
+                                   file_name='annotated_image.png',
+                                   mime='image/png')
         else:
             st.write("No detections or incorrect result format.")
 
