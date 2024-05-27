@@ -12,7 +12,7 @@ import io
 
 # MongoDB connection
 client = MongoClient("mongodb://localhost:27017/")
-db = client["data_converter"]
+db1 = client["data_converter"]
 collection = db["files"]
 
 # URL du fichier modèle sur GitHub
