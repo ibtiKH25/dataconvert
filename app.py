@@ -206,10 +206,11 @@ def main():
 
                 # Display corresponding image
                 image_file = csv_file.replace('.csv', os.path.splitext(file_name)[1])
-                if os.path.exists(image_file):
-                    st.image(image_file, caption='Corresponding Image', use_column_width=True)
-                else:
-                    st.warning(f"No corresponding image found for {file_name}")
+                try:
+                    image = Image.open(image_file)
+                    st.image(image, caption='Corresponding Image', use_column_width=True)
+                except Exception as e:
+                    st.warning(f"Could not open image file: {image_file}. Error: {e}")
         else:
             st.write("No saved data found.")
 
