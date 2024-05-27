@@ -39,7 +39,7 @@ pytesseract.pytesseract.tesseract_cmd = 'tesseract'
 @st.cache_data
 def load_model(model_path):
     try:
-        st.write(f"Loading model from: {model_path}")
+        
         model = YOLO(model_path)
         return model
     except Exception as e:
