@@ -8,7 +8,7 @@ import pandas as pd
 import os
 import requests
 from pymongo import MongoClient
-import io
+
 
 
 
