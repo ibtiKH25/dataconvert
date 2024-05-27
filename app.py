@@ -145,9 +145,9 @@ def main():
     add_custom_css()
     
     st.sidebar.title("Menu")
-    page = st.sidebar.selectbox("Select a page", ["Convert Data ", "Historique"])
+    page = st.sidebar.selectbox("Select a page", ["Upload and Process ", "Historique"])
 
-    if page == "Convert Data":
+    if page == "Upload and Process":
         st.title('Data Converter LEONI \n Convert Technical Drawings with Accuracy and Ease')
         uploaded_file = st.file_uploader("Choose an image to analyze...", type=["jpg", "png", "jpeg"])
         
