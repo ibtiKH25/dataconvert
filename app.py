@@ -26,7 +26,6 @@ def download_model(url, local_path):
         response = requests.get(url)
         with open(local_path, 'wb') as file:
             file.write(response.content)
-        
 
     return local_path
 
@@ -42,7 +41,6 @@ def load_model(model_path):
     try:
         st.write(f"Loading model from: {model_path}")
         model = YOLO(model_path)
-        
         return model
     except Exception as e:
         st.error(f"Error loading model: {e}")
@@ -52,7 +50,7 @@ model = load_model(model_local_path)
 
 # Function to clean text by removing unwanted characters
 def clean_text(text):
-    unwanted_chars = ['é', '°', 'è', 'à', 'ç', '<', '¢', '/', '\\', '|', '>' ,'--' , '__' , '^' ,'^^' , '<<' , '>>' , '@' , '@@' , '&', '&&' ,'{' , '}']
+    unwanted_chars = ['é', '°', 'è', 'à', 'ç', '<', '¢', '/', '\\', '|', '>']
     for char in unwanted_chars:
         text = text.replace(char, '')
     return text
@@ -144,8 +142,8 @@ def add_custom_css():
 def main():
     add_custom_css()
     
-    st.sidebar.title("Menu")
-    page = st.sidebar.selectbox("Select a page", ["Upload and Process ", "Historique"])
+    st.sidebar.title("Navigation")
+    page = st.sidebar.selectbox("Select a page", ["Upload and Process", "View Saved Data"])
 
     if page == "Upload and Process":
         st.title('Data Converter LEONI \n Convert Technical Drawings with Accuracy and Ease')
@@ -236,8 +234,8 @@ def main():
             else:
                 st.write("No detections or incorrect result format.")
 
-    elif page == "Historique":
-        st.title('Historique')
+    elif page == "View Saved Data":
+        st.title('View Saved Data')
 
         # Add a search box
         search_query = st.text_input("Search by image name:")
