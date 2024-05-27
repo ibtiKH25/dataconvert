@@ -147,7 +147,7 @@ def main():
     st.sidebar.title("Menu")
     page = st.sidebar.selectbox("Select a page", ["Convert Data ", "Historique"])
 
-    if page == "Upload and Process":
+    if page == "Convert Data":
         st.title('Data Converter LEONI \n Convert Technical Drawings with Accuracy and Ease')
         uploaded_file = st.file_uploader("Choose an image to analyze...", type=["jpg", "png", "jpeg"])
         
