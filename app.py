@@ -179,8 +179,8 @@ def main():
             st.download_button(label="Download data as CSV",
             csv_id = collection.insert_one({"filename": f"extracted_data_{file_id}.csv", "file": csv_data}).inserted_id
             st.write(f"CSV file saved to database with ID: {csv_id}")    
-            st.download_button(label="Download data as CSV",
-                               data=csv,
+        st.download_button(label="Download data as CSV",
+                               data=csv_data,
                                file_name='extracted_data.csv',
                                mime='text/csv')
         else:
