@@ -11,11 +11,8 @@ import uuid
 
 # URL du fichier modèle sur GitHub
 model_url = 'https://github.com/ibtiKH25/dataconvert/raw/main/TrainingModel.pt'
-
-# Chemin local où le fichier modèle sera sauvegardé
 model_local_path = 'TrainingModel.pt'
 
-# Téléchargement du modèle depuis GitHub
 @st.cache_data
 def download_model(url, local_path):
     if not os.path.exists(local_path):
@@ -23,23 +20,17 @@ def download_model(url, local_path):
         response = requests.get(url)
         with open(local_path, 'wb') as file:
             file.write(response.content)
-        
-
     return local_path
 
-# Télécharger le modèle
 download_model(model_url, model_local_path)
-
-# Configure the path to Tesseract OCR
 pytesseract.pytesseract.tesseract_cmd = 'tesseract'
 
-# Load the YOLO model
 @st.cache_data
 def load_model(model_path):
     try:
         st.write(f"Loading model from: {model_path}")
         model = YOLO(model_path)
-        
+        st.write("Model loaded successfully")
         return model
     except Exception as e:
         st.error(f"Error loading model: {e}")
@@ -47,15 +38,12 @@ def load_model(model_path):
 
 model = load_model(model_local_path)
 
-# Function to clean text by removing unwanted characters
 def clean_text(text):
     unwanted_chars = ['é', '°', 'è', 'à', 'ç', '<', '¢', '/', '\\' , '|' , '>']
-
     for char in unwanted_chars:
         text = text.replace(char, '')
     return text
 
-# Function to detect objects in the image using the YOLO model
 def detect_objects(image, model):
     if model is None:
         st.error("Model is not loaded. Cannot perform detection.")
@@ -67,25 +55,23 @@ def detect_objects(image, model):
         st.error(f"Error during detection: {e}")
         return None
 
-# Function to extract text from a specific region in the image
 def extract_text_from_region(image, box):
     try:
         x1, y1, x2, y2 = map(int, box[:4])
         cropped_image = image[y1:y2, x1:x2]
         text = pytesseract.image_to_string(cropped_image)
-        text = clean_text(text)  # Clean the extracted text
+        text = clean_text(text)
         return text.strip()
     except Exception as e:
         st.error(f"Error extracting text from region: {e}")
         return ""
 
-# Function to determine the cable type based on the text in the detected table
 def determine_cable_type_from_table(image, box):
     try:
         x1, y1, x2, y2 = map(int, box[:4])
         table_region = image[y1:y2, x1:x2]
         text = pytesseract.image_to_string(table_region)
-        text = clean_text(text)  # Clean the extracted text
+        text = clean_text(text)
         lines = text.strip().split('\n')
         num_lines = len(lines)
         if num_lines == 4 or num_lines == 5:
@@ -108,6 +94,9 @@ def create_directory(directory):
 def main():
     st.title('Data Converter LEONI \n Convert Technical Drawings with Accuracy and Ease')
 
+    # Ensure the 'Historique' directory exists
+    create_directory('Historique')
+
     uploaded_file = st.file_uploader("Choose an image to analyze...", type=["jpg", "png", "jpeg", "pdf"])
     if uploaded_file is not None:
         try:
@@ -120,7 +109,6 @@ def main():
 
         results_list = detect_objects(image_cv2, model)
 
-        # Mapping of old class names to new class names
         class_name_mapping = {
             "0- Side1": "Side1",
             "1- Side2": "Side2",
@@ -131,9 +119,8 @@ def main():
             "6- TypeOfCableAssembly": "TypeOfCableAssembly"
         }
 
-        # Dictionary to store the extracted data
         class_data = {new_name: [] for new_name in class_name_mapping.values()}
-         
+
         if results_list:
             for results in results_list:
                 if hasattr(results, 'boxes') and results.boxes is not None:
@@ -158,24 +145,18 @@ def main():
             annotated_image = Image.fromarray(cv2.cvtColor(image_cv2, cv2.COLOR_BGR2RGB))
             st.image(annotated_image, caption='Annotated Image', use_column_width=True)
 
-            # Create a unique directory for this upload within "Historique"
             unique_dir = os.path.join('Historique', str(uuid.uuid4()))
             create_directory(unique_dir)
 
-            # Save the CSV file to the unique directory
             csv_file_path = os.path.join(unique_dir, 'extracted_data.csv')
             df = pd.DataFrame.from_dict(class_data, orient='index').transpose()
-            column_order = ['Side1', 'Side2', 'LEONIPartNumber', 'SupplierPartNumber', 'Wiretype', 'Length', 'TypeOfCableAssembly' ,'Pigtail', 'HV']
-            df = df[column_order]  # Reorder the columns
+            column_order = ['Side1', 'Side2', 'LEONIPartNumber', 'SupplierPartNumber', 'Wiretype', 'Length', 'TypeOfCableAssembly', 'Pigtail', 'HV']
+            df = df[column_order]
             df.to_csv(csv_file_path, index=False, sep=';', encoding='utf-8-sig')
-            
 
-            # Save the annotated image to the unique directory
             image_file_path = os.path.join(unique_dir, 'annotated_image.png')
             annotated_image.save(image_file_path)
-           
 
-            # Provide download buttons
             st.download_button(label="Download data as CSV",
                                data=df.to_csv(index=False, sep=';', encoding='utf-8-sig').encode('utf-8-sig'),
                                file_name='extracted_data.csv',
