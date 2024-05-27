@@ -26,7 +26,6 @@ def download_model(url, local_path):
         response = requests.get(url)
         with open(local_path, 'wb') as file:
             file.write(response.content)
-
     return local_path
 
 # Télécharger le modèle
@@ -149,7 +148,7 @@ def main():
         st.title('Data Converter LEONI \n Convert Technical Drawings with Accuracy and Ease')
         uploaded_files = st.file_uploader("Choose images to analyze...", type=["jpg", "png", "jpeg"], accept_multiple_files=True)
         
-        if uploaded_files is not None:
+        if uploaded_files:
             for uploaded_file in uploaded_files:
                 try:
                     image = Image.open(uploaded_file)
@@ -226,14 +225,18 @@ def main():
 
                         st.success(f"Data and Technical Drawing saved successfully: {csv_path} and {image_path}")
 
-                        # Provide a download button for the CSV file
-                        csv = df.to_csv(index=False, sep=';', encoding='utf-8-sig').encode('utf-8-sig')
-                        st.download_button(label=f"Download data as CSV - {uploaded_file.name}",
-                                        data=csv,
-                                        file_name=f'{base_filename}_extracted_data.csv',
-                                        mime='text/csv')
+                    # Provide a download button for the CSV file
+                    csv = df.to_csv(index=False, sep=';', encoding='utf-8-sig').encode('utf-8-sig')
+                    st.download_button(label=f"Download data as CSV - {uploaded_file.name}",
+                                    data=csv,
+                                    file_name=f'{base_filename}_extracted_data.csv',
+                                    mime='text/csv')
                 else:
                     st.write(f"No detections or incorrect result format for {uploaded_file.name}.")
+        else:
+            st.write("No files uploaded yet.")
+            csv = pd.DataFrame().to_csv(index=False).encode('utf-8-sig')
+            st.download_button(label="Download data as CSV", data=csv, file_name='extracted_data.csv', mime='text/csv')
 
     elif page == "Historique":
         st.title('Historique')
