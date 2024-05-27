@@ -198,32 +198,40 @@ def main():
 
     elif page == "View Saved Data":
         st.title('View Saved Data')
+
+        # Add a search box
+        search_query = st.text_input("Search by image name:")
+
+        # Get all saved CSV files
         saved_files = glob.glob('saved_data/*.csv')
         if saved_files:
             for csv_file in saved_files:
                 file_name = os.path.basename(csv_file)
-                st.subheader(file_name)
-                df = pd.read_csv(csv_file, sep=';', encoding='utf-8-sig')
-                st.dataframe(df)
+                base_filename = os.path.splitext(file_name)[0]
 
-                # Display corresponding image
-                base_filename = os.path.splitext(csv_file)[0]
-                image_files = glob.glob(f"{base_filename}.*")
-                image_file = None
-                for ext in ['jpg', 'jpeg', 'png']:
-                    potential_image_file = f"{base_filename}.{ext}"
-                    if potential_image_file in image_files:
-                        image_file = potential_image_file
-                        break
+                # Display only if the search query matches the base filename
+                if search_query.lower() in base_filename.lower():
+                    st.subheader(file_name)
+                    df = pd.read_csv(csv_file, sep=';', encoding='utf-8-sig')
+                    st.dataframe(df)
 
-                if image_file and os.path.exists(image_file):
-                    try:
-                        image = Image.open(image_file)
-                        st.image(image, caption='Corresponding Image', use_column_width=True)
-                    except Exception as e:
-                        st.warning(f"Could not open image file: {image_file}. Error: {e}")
-                else:
-                    st.warning(f"No corresponding image found for {file_name}")
+                    # Display corresponding image
+                    image_files = glob.glob(f"saved_data/{base_filename}.*")
+                    image_file = None
+                    for ext in ['jpg', 'jpeg', 'png']:
+                        potential_image_file = f"saved_data/{base_filename}.{ext}"
+                        if potential_image_file in image_files:
+                            image_file = potential_image_file
+                            break
+
+                    if image_file and os.path.exists(image_file):
+                        try:
+                            image = Image.open(image_file)
+                            st.image(image, caption='Corresponding Image', use_column_width=True)
+                        except Exception as e:
+                            st.warning(f"Could not open image file: {image_file}. Error: {e}")
+                    else:
+                        st.warning(f"No corresponding image found for {file_name}")
         else:
             st.write("No saved data found.")
 
