@@ -109,7 +109,7 @@ def main():
 
     if page == "Upload and Process":
         st.title('Data Converter LEONI \n Convert Technical Drawings with Accuracy and Ease')
-        uploaded_file = st.file_uploader("Choose an image to analyze...", type=["jpg", "png", "jpeg", "pdf"])
+        uploaded_file = st.file_uploader("Choose an image to analyze...", type=["jpg", "png", "jpeg"])
         
         if uploaded_file is not None:
             try:
@@ -176,11 +176,13 @@ def main():
                         os.makedirs(output_dir)
 
                     # Save CSV
-                    csv_path = os.path.join(output_dir, f"{uploaded_file.name.split('.')[0]}.csv")
+                    base_filename = os.path.splitext(uploaded_file.name)[0]
+                    csv_path = os.path.join(output_dir, f"{base_filename}.csv")
                     df.to_csv(csv_path, index=False, sep=';', encoding='utf-8-sig')
 
-                    # Save Image
-                    image_path = os.path.join(output_dir, uploaded_file.name)
+                    # Save Image with the same extension as uploaded
+                    image_extension = os.path.splitext(uploaded_file.name)[1]
+                    image_path = os.path.join(output_dir, f"{base_filename}{image_extension}")
                     annotated_image.save(image_path)
 
                     st.success(f"Data and image saved successfully: {csv_path} and {image_path}")
@@ -205,12 +207,23 @@ def main():
                 st.dataframe(df)
 
                 # Display corresponding image
-                image_file = csv_file.replace('.csv', os.path.splitext(file_name)[1])
-                try:
-                    image = Image.open(image_file)
-                    st.image(image, caption='Corresponding Image', use_column_width=True)
-                except Exception as e:
-                    st.warning(f"Could not open image file: {image_file}. Error: {e}")
+                base_filename = os.path.splitext(csv_file)[0]
+                image_files = glob.glob(f"{base_filename}.*")
+                image_file = None
+                for ext in ['jpg', 'jpeg', 'png']:
+                    potential_image_file = f"{base_filename}.{ext}"
+                    if potential_image_file in image_files:
+                        image_file = potential_image_file
+                        break
+
+                if image_file and os.path.exists(image_file):
+                    try:
+                        image = Image.open(image_file)
+                        st.image(image, caption='Corresponding Image', use_column_width=True)
+                    except Exception as e:
+                        st.warning(f"Could not open image file: {image_file}. Error: {e}")
+                else:
+                    st.warning(f"No corresponding image found for {file_name}")
         else:
             st.write("No saved data found.")
 
