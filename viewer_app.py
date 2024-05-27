@@ -11,7 +11,12 @@ def create_directory(directory):
 # Function to list available directories
 def list_subdirectories(directory):
     create_directory(directory)  # Ensure the directory exists before listing
-    return [d for d in os.listdir(directory) if os.path.isdir(os.path.join(directory, d))]
+    st.write(f"Checking contents of: {directory}")
+    all_items = os.listdir(directory)
+    st.write(f"All items in directory: {all_items}")
+    subdirs = [d for d in all_items if os.path.isdir(os.path.join(directory, d))]
+    st.write(f"Found subdirectories: {subdirs}")
+    return subdirs
 
 # Function to load and display a selected CSV file
 def display_csv_file(file_path):
