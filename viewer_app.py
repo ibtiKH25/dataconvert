@@ -30,9 +30,11 @@ def main():
 
     # Ensure the 'Historique' directory exists
     create_directory('Historique')
+    st.write("Created/Checked 'Historique' directory")
 
     base_directory = 'Historique'
     subdirectories = list_subdirectories(base_directory)
+    st.write(f"Subdirectories: {subdirectories}")
 
     if subdirectories:
         selected_subdirectory = st.selectbox('Select a directory', subdirectories)
