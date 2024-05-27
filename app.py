@@ -93,6 +93,10 @@ def create_directory(directory):
 def main():
     st.title('Data Converter LEONI \n Convert Technical Drawings with Accuracy and Ease')
 
+    # Print current working directory
+    current_directory = os.getcwd()
+    st.write(f"Current working directory: {current_directory}")
+
     # Ensure the 'Historique' directory exists
     create_directory('Historique')
     st.write("Created/Checked 'Historique' directory")
