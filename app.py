@@ -26,9 +26,8 @@ def download_model(url, local_path):
         response = requests.get(url)
         with open(local_path, 'wb') as file:
             file.write(response.content)
-        st.write("Model downloaded successfully")
-    else:
-        st.write("Model already exists locally")
+        
+
     return local_path
 
 # Télécharger le modèle
@@ -43,7 +42,7 @@ def load_model(model_path):
     try:
         st.write(f"Loading model from: {model_path}")
         model = YOLO(model_path)
-        st.write("Model loaded successfully")
+        
         return model
     except Exception as e:
         st.error(f"Error loading model: {e}")
@@ -211,7 +210,7 @@ def main():
                 st.dataframe(df)
 
                 # Save the data and image
-                if st.button("Save Data and Image"):
+                if st.button("Save Data and Technical Drawing"):
                     output_dir = "saved_data"
                     if not os.path.exists(output_dir):
                         os.makedirs(output_dir)
@@ -226,7 +225,7 @@ def main():
                     image_path = os.path.join(output_dir, f"{base_filename}{image_extension}")
                     annotated_image.save(image_path)
 
-                    st.success(f"Data and image saved successfully: {csv_path} and {image_path}")
+                    st.success(f"Data and Technical Drawing saved successfully: {csv_path} and {image_path}")
 
                 # Provide a download button for the CSV file
                 csv = df.to_csv(index=False, sep=';', encoding='utf-8-sig').encode('utf-8-sig')
@@ -237,8 +236,8 @@ def main():
             else:
                 st.write("No detections or incorrect result format.")
 
-    elif page == "View Saved Data":
-        st.title('View Saved Data')
+    elif page == "Historique":
+        st.title('Historiquea')
 
         # Add a search box
         search_query = st.text_input("Search by image name:")
