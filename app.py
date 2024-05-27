@@ -113,6 +113,11 @@ def main():
     uploaded_file = st.file_uploader("Choose an image to analyze...", type=["jpg", "png", "jpeg", "pdf"])
     if uploaded_file is not None:
         try:
+            # Save the uploaded image to MongoDB
+            image_bytes = uploaded_file.read()
+            file_id = collection.insert_one({"filename": uploaded_file.name, "file": image_bytes}).inserted_id
+            st.write(f"Image saved to database with ID: {file_id}")
+
             image = Image.open(uploaded_file)
             image_np = np.array(image.convert('RGB'))
             image_cv2 = cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR)
