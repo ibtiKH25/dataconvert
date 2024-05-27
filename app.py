@@ -237,7 +237,7 @@ def main():
                 st.write("No detections or incorrect result format.")
 
     elif page == "Historique":
-        st.title('Historiquea')
+        st.title('Historique')
 
         # Add a search box
         search_query = st.text_input("Search by image name:")
