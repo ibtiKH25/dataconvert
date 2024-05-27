@@ -34,6 +34,10 @@ def display_image_file(file_path):
 def main():
     st.title('View Saved Files')
 
+    # Print current working directory
+    current_directory = os.getcwd()
+    st.write(f"Current working directory: {current_directory}")
+
     # Ensure the 'Historique' directory exists
     base_directory = 'Historique'
     create_directory(base_directory)
