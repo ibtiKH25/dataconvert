@@ -85,12 +85,11 @@ def determine_cable_type_from_table(image, box):
         st.error(f"Error determining cable type from table: {e}")
         return "Unknown"
 
-# Function to create a directory if it doesn't exist
 def create_directory(directory):
     if not os.path.exists(directory):
         os.makedirs(directory)
+    st.write(f"Checked/created directory: {directory}")
 
-# Main function to run the Streamlit app
 def main():
     st.title('Data Converter LEONI \n Convert Technical Drawings with Accuracy and Ease')
 
