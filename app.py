@@ -12,8 +12,8 @@ import io
 
 # MongoDB connection
 client = MongoClient("mongodb://localhost:27017/")
-db1 = client["data_converter"]
-collection = db1["files"]
+db = client["data_converter"]
+collection = db["files"]
 
 # URL du fichier modèle sur GitHub
 model_url = 'https://github.com/ibtiKH25/dataconvert/raw/main/TrainingModel.pt'
