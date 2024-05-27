@@ -159,8 +159,8 @@ def main():
             annotated_image = Image.fromarray(cv2.cvtColor(image_cv2, cv2.COLOR_BGR2RGB))
             st.image(annotated_image, caption='Annotated Image', use_column_width=True)
 
-            # Create a unique directory for this upload
-            unique_dir = os.path.join('uploads', str(uuid.uuid4()))
+            # Create a unique directory for this upload within "Historique"
+            unique_dir = os.path.join('Historique', str(uuid.uuid4()))
             create_directory(unique_dir)
 
             # Save the CSV file to the unique directory
