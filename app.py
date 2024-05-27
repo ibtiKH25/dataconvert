@@ -102,17 +102,6 @@ def determine_cable_type_from_table(image, box):
         st.error(f"Error determining cable type from table: {e}")
         return "Unknown"
 
-# Function to delete files
-def delete_files(csv_path, image_path):
-    try:
-        if os.path.exists(csv_path):
-            os.remove(csv_path)
-        if os.path.exists(image_path):
-            os.remove(image_path)
-        st.success(f"Deleted files: {csv_path} and {image_path}")
-    except Exception as e:
-        st.error(f"Error deleting files: {e}")
-
 # Main function to run the Streamlit app
 def main():
     st.sidebar.title("Navigation")
@@ -241,14 +230,37 @@ def main():
                             st.image(image, caption='Corresponding Image', use_column_width=True)
                         except Exception as e:
                             st.warning(f"Could not open image file: {image_file}. Error: {e}")
+                    
+                    # Add buttons for delete and modify actions
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        if st.button(f"Delete {file_name}"):
+                            os.remove(csv_file)
+                            if image_file:
+                                os.remove(image_file)
+                            st.success(f"Deleted {file_name} and its image.")
+                            st.experimental_rerun()
+                    with col2:
+                        if st.button(f"Modify {file_name}"):
+                            st.session_state['modify_file'] = csv_file
+                            st.experimental_rerun()
 
-                        # Add a delete button
-                        if st.button(f"Delete {file_name}", key=file_name):
-                            delete_files(csv_file, image_file)
-                    else:
-                        st.warning(f"No corresponding image found for {file_name}")
         else:
             st.write("No saved data found.")
+
+        # Check if a file is selected for modification
+        if 'modify_file' in st.session_state:
+            modify_file = st.session_state['modify_file']
+            if modify_file:
+                st.write(f"Modifying: {modify_file}")
+                df = pd.read_csv(modify_file, sep=';', encoding='utf-8-sig')
+                new_data = st.experimental_data_editor(df)
+
+                if st.button("Save Changes"):
+                    new_data.to_csv(modify_file, index=False, sep=';', encoding='utf-8-sig')
+                    st.success("Changes saved.")
+                    del st.session_state['modify_file']
+                    st.experimental_rerun()
 
 if __name__ == '__main__':
     main()
