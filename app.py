@@ -22,7 +22,7 @@ model_local_path = 'TrainingModel.pt'
 @st.cache_data
 def download_model(url, local_path):
     if not os.path.exists(local_path):
-        st.write(f"Downloading model from: {url}")
+        
         response = requests.get(url)
         with open(local_path, 'wb') as file:
             file.write(response.content)
