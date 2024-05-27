@@ -144,7 +144,7 @@ def add_custom_css():
 def main():
     add_custom_css()
     
-    st.sidebar.title("Navigation")
+    st.sidebar.title("Menu")
     page = st.sidebar.selectbox("Select a page", ["Upload and Process", "Historique"])
 
     if page == "Upload and Process":
