@@ -96,6 +96,7 @@ def main():
 
     # Ensure the 'Historique' directory exists
     create_directory('Historique')
+    st.write("Created/Checked 'Historique' directory")
 
     uploaded_file = st.file_uploader("Choose an image to analyze...", type=["jpg", "png", "jpeg", "pdf"])
     if uploaded_file is not None:
@@ -147,15 +148,18 @@ def main():
 
             unique_dir = os.path.join('Historique', str(uuid.uuid4()))
             create_directory(unique_dir)
+            st.write(f"Created/Checked unique directory: {unique_dir}")
 
             csv_file_path = os.path.join(unique_dir, 'extracted_data.csv')
             df = pd.DataFrame.from_dict(class_data, orient='index').transpose()
             column_order = ['Side1', 'Side2', 'LEONIPartNumber', 'SupplierPartNumber', 'Wiretype', 'Length', 'TypeOfCableAssembly', 'Pigtail', 'HV']
             df = df[column_order]
             df.to_csv(csv_file_path, index=False, sep=';', encoding='utf-8-sig')
+            st.write(f"Saved CSV file to: {csv_file_path}")
 
             image_file_path = os.path.join(unique_dir, 'annotated_image.png')
             annotated_image.save(image_file_path)
+            st.write(f"Saved annotated image to: {image_file_path}")
 
             st.download_button(label="Download data as CSV",
                                data=df.to_csv(index=False, sep=';', encoding='utf-8-sig').encode('utf-8-sig'),
