@@ -7,6 +7,7 @@ import pytesseract
 import pandas as pd
 import os
 import requests
+from pymongo import MongoClient
 
 # URL du fichier modèle sur GitHub
 model_url = 'https://github.com/ibtiKH25/dataconvert/raw/main/TrainingModel.pt'
