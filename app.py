@@ -164,6 +164,10 @@ def main():
             annotated_image.save(image_file_path)
             st.write(f"Saved annotated image to: {image_file_path}")
 
+            # List contents of Historique directory
+            all_items = os.listdir('Historique')
+            st.write(f"All items in 'Historique' directory after saving: {all_items}")
+
             st.download_button(label="Download data as CSV",
                                data=df.to_csv(index=False, sep=';', encoding='utf-8-sig').encode('utf-8-sig'),
                                file_name='extracted_data.csv',
