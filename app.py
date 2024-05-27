@@ -102,6 +102,17 @@ def determine_cable_type_from_table(image, box):
         st.error(f"Error determining cable type from table: {e}")
         return "Unknown"
 
+# Function to delete files
+def delete_files(csv_path, image_path):
+    try:
+        if os.path.exists(csv_path):
+            os.remove(csv_path)
+        if os.path.exists(image_path):
+            os.remove(image_path)
+        st.success(f"Deleted files: {csv_path} and {image_path}")
+    except Exception as e:
+        st.error(f"Error deleting files: {e}")
+
 # Main function to run the Streamlit app
 def main():
     st.sidebar.title("Navigation")
@@ -230,6 +241,10 @@ def main():
                             st.image(image, caption='Corresponding Image', use_column_width=True)
                         except Exception as e:
                             st.warning(f"Could not open image file: {image_file}. Error: {e}")
+
+                        # Add a delete button
+                        if st.button(f"Delete {file_name}", key=file_name):
+                            delete_files(csv_file, image_file)
                     else:
                         st.warning(f"No corresponding image found for {file_name}")
         else:
