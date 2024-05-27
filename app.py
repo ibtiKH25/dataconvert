@@ -9,10 +9,7 @@ import os
 import requests
 from pymongo import MongoClient
 import io
-# MongoDB connection
-client = MongoClient("mongodb://localhost:27017/")
-db = client["test_database"]
-fs = gridfs.GridFS(db)
+
 
 
 # URL du fichier modèle sur GitHub
