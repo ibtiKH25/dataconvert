@@ -50,7 +50,7 @@ model = load_model(model_local_path)
 
 # Function to clean text by removing unwanted characters
 def clean_text(text):
-    unwanted_chars = ['é', '°', 'è', 'à', 'ç', '<', '¢', '/', '\\', '|', '>' , '--' , '__' , '<<' , '>>' '@', '@@' , '^' , '^^' , '}' , '{' ,'&' , '&&' , '//']
+    unwanted_chars = ['é', '°', 'è', 'à', 'ç', '<', '¢', '/', '\\', '|', '>' , '--' , '__' , '<<' , '>>' '@', '@@' , '^' , '^^' , '}' , '{' ,'&' , '&&' , '//' , 'Supplier P/N' , 'Customer P/N']
     for char in unwanted_chars:
         text = text.replace(char, '')
     return text
