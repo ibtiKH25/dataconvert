@@ -7,6 +7,7 @@ import pytesseract
 import pandas as pd
 import os
 import requests
+import uuid
 
 # URL du fichier modèle sur GitHub
 model_url = 'https://github.com/ibtiKH25/dataconvert/raw/main/TrainingModel.pt'
@@ -158,26 +159,20 @@ def main():
             annotated_image = Image.fromarray(cv2.cvtColor(image_cv2, cv2.COLOR_BGR2RGB))
             st.image(annotated_image, caption='Annotated Image', use_column_width=True)
 
-            # Create a DataFrame for the CSV export
+            # Create a unique directory for this upload
+            unique_dir = os.path.join('uploads', str(uuid.uuid4()))
+            create_directory(unique_dir)
+
+            # Save the CSV file to the unique directory
+            csv_file_path = os.path.join(unique_dir, 'extracted_data.csv')
             df = pd.DataFrame.from_dict(class_data, orient='index').transpose()
             column_order = ['Side1', 'Side2', 'LEONIPartNumber', 'SupplierPartNumber', 'Wiretype', 'Length', 'TypeOfCableAssembly' ,'Pigtail', 'HV']
             df = df[column_order]  # Reorder the columns
-
-            # Display data in a table
-            st.write("Extracted Data:")
-            st.dataframe(df)
-
-            # Save the CSV file to the specified directory
-            csv_directory = 'csv_files'
-            create_directory(csv_directory)
-            csv_file_path = os.path.join(csv_directory, 'extracted_data.csv')
             df.to_csv(csv_file_path, index=False, sep=';', encoding='utf-8-sig')
             st.success(f"CSV file saved at {csv_file_path}")
 
-            # Save the annotated image
-            image_directory = 'annotated_images'
-            create_directory(image_directory)
-            image_file_path = os.path.join(image_directory, 'annotated_image.png')
+            # Save the annotated image to the unique directory
+            image_file_path = os.path.join(unique_dir, 'annotated_image.png')
             annotated_image.save(image_file_path)
             st.success(f"Annotated image saved at {image_file_path}")
 
