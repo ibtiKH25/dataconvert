@@ -147,92 +147,93 @@ def main():
 
     if page == "Convert Data":
         st.title('Data Converter LEONI \n Convert Technical Drawings with Accuracy and Ease')
-        uploaded_file = st.file_uploader("Choose an image to analyze...", type=["jpg", "png", "jpeg"])
+        uploaded_files = st.file_uploader("Choose images to analyze...", type=["jpg", "png", "jpeg"], accept_multiple_files=True)
         
-        if uploaded_file is not None:
-            try:
-                image = Image.open(uploaded_file)
-                image_np = np.array(image.convert('RGB'))
-                image_cv2 = cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR)
-            except Exception as e:
-                st.error(f"Error loading image: {e}")
-                return
+        if uploaded_files is not None:
+            for uploaded_file in uploaded_files:
+                try:
+                    image = Image.open(uploaded_file)
+                    image_np = np.array(image.convert('RGB'))
+                    image_cv2 = cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR)
+                except Exception as e:
+                    st.error(f"Error loading image: {e}")
+                    continue
 
-            results_list = detect_objects(image_cv2, model)
+                results_list = detect_objects(image_cv2, model)
 
-            # Mapping of old class names to new class names
-            class_name_mapping = {
-                "0- Side1": "Side1",
-                "1- Side2": "Side2",
-                "2- LEONIPartNumber": "LEONIPartNumber",
-                "3- SupplierPartNumber": "SupplierPartNumber",
-                "4- Wiretype": "Wiretype",
-                "5- Length": "Length",
-                "6- TypeOfCableAssembly": "TypeOfCableAssembly"
-            }
+                # Mapping of old class names to new class names
+                class_name_mapping = {
+                    "0- Side1": "Side1",
+                    "1- Side2": "Side2",
+                    "2- LEONIPartNumber": "LEONIPartNumber",
+                    "3- SupplierPartNumber": "SupplierPartNumber",
+                    "4- Wiretype": "Wiretype",
+                    "5- Length": "Length",
+                    "6- TypeOfCableAssembly": "TypeOfCableAssembly"
+                }
 
-            # Dictionary to store the extracted data
-            class_data = {new_name: [] for new_name in class_name_mapping.values()}
-            
-            if results_list:
-                for results in results_list:
-                    if hasattr(results, 'boxes') and results.boxes is not None:
-                        for i, box in enumerate(results.boxes.xyxy):
-                            if len(box) >= 4:
-                                class_id = int(results.boxes.cls[i]) if len(results.boxes.cls) > i else -1
-                                label = results.names[class_id] if class_id in results.names else "Unknown"
-                                new_label = class_name_mapping.get(label, label)
-                                if label == '6- TypeOfCableAssembly':
-                                    cable_type = determine_cable_type_from_table(image_cv2, box)
-                                    text = cable_type
-                                else:
-                                    text = extract_text_from_region(image_cv2, box)
-                                if new_label in class_data:
-                                    class_data[new_label].append(text)
-                                else:
-                                    st.warning(f"Detected label '{label}' is not in the specified columns.")
-                                cv2.rectangle(image_cv2, (int(box[0]), int(box[1])), (int(box[2]), int(box[3])), (0, 255, 0), 2)
-                class_data['Pigtail'] = ['Non']
-                class_data['HV'] = ['Non']
+                # Dictionary to store the extracted data
+                class_data = {new_name: [] for new_name in class_name_mapping.values()}
+                
+                if results_list:
+                    for results in results_list:
+                        if hasattr(results, 'boxes') and results.boxes is not None:
+                            for i, box in enumerate(results.boxes.xyxy):
+                                if len(box) >= 4:
+                                    class_id = int(results.boxes.cls[i]) if len(results.boxes.cls) > i else -1
+                                    label = results.names[class_id] if class_id in results.names else "Unknown"
+                                    new_label = class_name_mapping.get(label, label)
+                                    if label == '6- TypeOfCableAssembly':
+                                        cable_type = determine_cable_type_from_table(image_cv2, box)
+                                        text = cable_type
+                                    else:
+                                        text = extract_text_from_region(image_cv2, box)
+                                    if new_label in class_data:
+                                        class_data[new_label].append(text)
+                                    else:
+                                        st.warning(f"Detected label '{label}' is not in the specified columns.")
+                                    cv2.rectangle(image_cv2, (int(box[0]), int(box[1])), (int(box[2]), int(box[3])), (0, 255, 0), 2)
+                    class_data['Pigtail'] = ['Non']
+                    class_data['HV'] = ['Non']
 
-                annotated_image = Image.fromarray(cv2.cvtColor(image_cv2, cv2.COLOR_BGR2RGB))
-                st.image(annotated_image, caption='Annotated Image', use_column_width=True)
+                    annotated_image = Image.fromarray(cv2.cvtColor(image_cv2, cv2.COLOR_BGR2RGB))
+                    st.image(annotated_image, caption=f'Annotated Image - {uploaded_file.name}', use_column_width=True)
 
-                # Create a DataFrame for the CSV export
-                df = pd.DataFrame.from_dict(class_data, orient='index').transpose()
-                column_order = ['Side1', 'Side2', 'LEONIPartNumber', 'SupplierPartNumber', 'Wiretype', 'Length', 'TypeOfCableAssembly' ,'Pigtail', 'HV']
-                df = df[column_order]  # Reorder the columns
+                    # Create a DataFrame for the CSV export
+                    df = pd.DataFrame.from_dict(class_data, orient='index').transpose()
+                    column_order = ['Side1', 'Side2', 'LEONIPartNumber', 'SupplierPartNumber', 'Wiretype', 'Length', 'TypeOfCableAssembly' ,'Pigtail', 'HV']
+                    df = df[column_order]  # Reorder the columns
 
-                # Display data in a table
-                st.write("Extracted Data:")
-                st.dataframe(df)
+                    # Display data in a table
+                    st.write(f"Extracted Data - {uploaded_file.name}:")
+                    st.dataframe(df)
 
-                # Save the data and image
-                if st.button("Save Data and Technical Drawing"):
-                    output_dir = "saved_data"
-                    if not os.path.exists(output_dir):
-                        os.makedirs(output_dir)
+                    # Save the data and image
+                    if st.button(f"Save Data and Technical Drawing - {uploaded_file.name}"):
+                        output_dir = "saved_data"
+                        if not os.path.exists(output_dir):
+                            os.makedirs(output_dir)
 
-                    # Save CSV
-                    base_filename = os.path.splitext(uploaded_file.name)[0]
-                    csv_path = os.path.join(output_dir, f"{base_filename}.csv")
-                    df.to_csv(csv_path, index=False, sep=';', encoding='utf-8-sig')
+                        # Save CSV
+                        base_filename = os.path.splitext(uploaded_file.name)[0]
+                        csv_path = os.path.join(output_dir, f"{base_filename}.csv")
+                        df.to_csv(csv_path, index=False, sep=';', encoding='utf-8-sig')
 
-                    # Save Image with the same extension as uploaded
-                    image_extension = os.path.splitext(uploaded_file.name)[1]
-                    image_path = os.path.join(output_dir, f"{base_filename}{image_extension}")
-                    annotated_image.save(image_path)
+                        # Save Image with the same extension as uploaded
+                        image_extension = os.path.splitext(uploaded_file.name)[1]
+                        image_path = os.path.join(output_dir, f"{base_filename}{image_extension}")
+                        annotated_image.save(image_path)
 
-                    st.success(f"Data and Technical Drawing saved successfully: {csv_path} and {image_path}")
+                        st.success(f"Data and Technical Drawing saved successfully: {csv_path} and {image_path}")
 
-                # Provide a download button for the CSV file
-                csv = df.to_csv(index=False, sep=';', encoding='utf-8-sig').encode('utf-8-sig')
-                st.download_button(label="Download data as CSV",
-                                data=csv,
-                                file_name='extracted_data.csv',
-                                mime='text/csv')
-            else:
-                st.write("No detections or incorrect result format.")
+                        # Provide a download button for the CSV file
+                        csv = df.to_csv(index=False, sep=';', encoding='utf-8-sig').encode('utf-8-sig')
+                        st.download_button(label=f"Download data as CSV - {uploaded_file.name}",
+                                        data=csv,
+                                        file_name=f'{base_filename}_extracted_data.csv',
+                                        mime='text/csv')
+                else:
+                    st.write(f"No detections or incorrect result format for {uploaded_file.name}.")
 
     elif page == "Historique":
         st.title('Historique')
