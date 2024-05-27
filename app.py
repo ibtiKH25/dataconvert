@@ -173,13 +173,15 @@ def main():
             st.write("Extracted Data:")
             st.dataframe(df)
 
-            # Convert DataFrame to CSV and save to MongoDB
+           # Convert DataFrame to CSV and save to MongoDB
             csv_buffer = io.StringIO()
-            csv = df.to_csv(index=False, sep=';', encoding='utf-8-sig').encode('utf-8-sig')
-            st.download_button(label="Download data as CSV",
+            df.to_csv(csv_buffer, index=False, sep=';', encoding='utf-8-sig')
+            csv_data = csv_buffer.getvalue().encode('utf-8-sig')
             csv_id = collection.insert_one({"filename": f"extracted_data_{file_id}.csv", "file": csv_data}).inserted_id
-            st.write(f"CSV file saved to database with ID: {csv_id}")    
-        st.download_button(label="Download data as CSV",
+            st.write(f"CSV file saved to database with ID: {csv_id}")
+
+            # Provide a download button for the CSV file
+            st.download_button(label="Download data as CSV",
                                data=csv_data,
                                file_name='extracted_data.csv',
                                mime='text/csv')
