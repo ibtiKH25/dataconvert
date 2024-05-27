@@ -26,6 +26,7 @@ def download_model(url, local_path):
         response = requests.get(url)
         with open(local_path, 'wb') as file:
             file.write(response.content)
+
     return local_path
 
 # Télécharger le modèle
@@ -147,13 +148,8 @@ def main():
     if page == "Convert Data":
         st.title('Data Converter LEONI \n Convert Technical Drawings with Accuracy and Ease')
         uploaded_files = st.file_uploader("Choose images to analyze...", type=["jpg", "png", "jpeg"], accept_multiple_files=True)
-
-        # Initialize an empty DataFrame for the CSV download button
-        empty_df = pd.DataFrame()
-        csv = empty_df.to_csv(index=False).encode('utf-8-sig')
-        st.download_button(label="Download data as CSV", data=csv, file_name='extracted_data.csv', mime='text/csv')
-
-        if uploaded_files:
+        
+        if uploaded_files is not None:
             for uploaded_file in uploaded_files:
                 try:
                     image = Image.open(uploaded_file)
@@ -238,8 +234,6 @@ def main():
                                         mime='text/csv')
                 else:
                     st.write(f"No detections or incorrect result format for {uploaded_file.name}.")
-        else:
-            st.write("No files uploaded yet.")
 
     elif page == "Historique":
         st.title('Historique')
