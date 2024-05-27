@@ -10,7 +10,7 @@ import requests
 import glob
 
 # Set the page configuration
-st.experimental_set_page_config(page_title="Data Converter LEONI", layout="wide")
+st.set_page_config(page_title="Data Converter LEONI", layout="wide")
 
 # URL du fichier modèle sur GitHub
 model_url = 'https://github.com/ibtiKH25/dataconvert/raw/main/TrainingModel.pt'
