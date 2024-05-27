@@ -102,8 +102,48 @@ def determine_cable_type_from_table(image, box):
         st.error(f"Error determining cable type from table: {e}")
         return "Unknown"
 
+# Add custom CSS for styling
+def add_custom_css():
+    st.markdown("""
+    <style>
+    .main {
+        background-color: #f0f2f6;
+    }
+    .stButton>button {
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        padding: 10px 24px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+        border-radius: 12px;
+    }
+    .stTextInput>div>div>input {
+        border: 2px solid #4CAF50;
+        padding: 5px;
+        border-radius: 10px;
+    }
+    .stTextInput>div>label {
+        font-weight: bold;
+    }
+    .stMarkdown h1 {
+        color: #4CAF50;
+    }
+    .stDataFrame>div {
+        border: 2px solid #4CAF50;
+        border-radius: 10px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
 # Main function to run the Streamlit app
 def main():
+    add_custom_css()
+    
     st.sidebar.title("Navigation")
     page = st.sidebar.selectbox("Select a page", ["Upload and Process", "View Saved Data"])
 
