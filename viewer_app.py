@@ -28,4 +28,14 @@ def main():
         image_file_path = os.path.join(base_directory, selected_subdirectory, 'annotated_image.png')
 
         if os.path.exists(csv_file_path):
-            display
+            display_csv_file(csv_file_path)
+        else:
+            st.write("CSV file not found.")
+
+        if os.path.exists(image_file_path):
+            display_image_file(image_file_path)
+        else:
+            st.write("Image file not found.")
+
+if __name__ == '__main__':
+    main()
