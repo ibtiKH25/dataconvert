@@ -164,7 +164,7 @@ def main():
                     # Directly load image if it is not a PDF
                     img = Image.open(uploaded_file)
 
-                st.image(img, caption='Uploaded Image/PDF', use_column_width=True)
+                
                 image_np = np.array(img.convert('RGB'))
                 image_cv2 = cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR)
 
