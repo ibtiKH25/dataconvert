@@ -2,12 +2,14 @@ import streamlit as st
 from PIL import Image
 import numpy as np
 import cv2
+import fitz 
 from ultralytics import YOLO
 import pytesseract
 import pandas as pd
 import os
 import requests
 import glob
+import io
 
 # Set the page configuration
 st.set_page_config(page_title="Data Converter LEONI", layout="wide")
@@ -22,11 +24,9 @@ model_local_path = 'TrainingModel.pt'
 @st.cache_data
 def download_model(url, local_path):
     if not os.path.exists(local_path):
-        
         response = requests.get(url)
         with open(local_path, 'wb') as file:
             file.write(response.content)
-
     return local_path
 
 # Télécharger le modèle
@@ -39,7 +39,6 @@ pytesseract.pytesseract.tesseract_cmd = 'tesseract'
 @st.cache_data
 def load_model(model_path):
     try:
-        
         model = YOLO(model_path)
         return model
     except Exception as e:
@@ -55,7 +54,6 @@ def clean_text(text):
     'à', 'á', 'â', 'ã', 'ä', 'å', 'æ', 'ç', 'è', 'é', 'ê', 'ë', 'ì', 'í', 'î', 'ï', 'ð', 'ñ', 'ò', 'ó', 'ô', 'õ', 'ö', 'ø', 'œ', 'š', 'Þ', 'ù', 'ú', 'û', 'ü', 'ý', 'ÿ', 
     '¢', 'ß', '¥', '£', '™', '©', 'ª', '×', '÷', '²', '³', '¼', '½', '¾', 'µ', '¿', '¶', '·', '¸', 'º', '°', '¯', '§', '…', '¤', '¦', '≠', '¬', 'ˆ', '¨', '‰' , "'" , "'Supplier P/N" , "'Customer P/N"
 ]
-
     for char in unwanted_chars:
         text = text.replace(char, '')
     return text
@@ -152,17 +150,23 @@ def main():
 
     if page == "Convert Data":
         st.title('Data Converter LEONI \n Convert Technical Drawings with Accuracy and Ease')
-        uploaded_files = st.file_uploader("Choose images to analyze...", type=["jpg", "png", "jpeg"], accept_multiple_files=True)
+        uploaded_files = st.file_uploader("Choose images to analyze...", type=["jpg", "png", "jpeg", "pdf"], accept_multiple_files=True)
         
         if uploaded_files is not None:
             for uploaded_file in uploaded_files:
-                try:
-                    image = Image.open(uploaded_file)
-                    image_np = np.array(image.convert('RGB'))
-                    image_cv2 = cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR)
-                except Exception as e:
-                    st.error(f"Error loading image: {e}")
-                    continue
+                if uploaded_file.type == "application/pdf":
+                    # Convert PDF to image if uploaded file is PDF
+                    doc = fitz.open(stream=uploaded_file.read())  # Open the PDF from stream
+                    page = doc.load_page(0)  # Load the first page
+                    pix = page.get_pixmap()  # Render page to an image
+                    img = Image.open(io.BytesIO(pix.tobytes('png')))  # Convert image to PIL format
+                else:
+                    # Directly load image if it is not a PDF
+                    img = Image.open(uploaded_file)
+
+                st.image(img, caption='Uploaded Image/PDF', use_column_width=True)
+                image_np = np.array(img.convert('RGB'))
+                image_cv2 = cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR)
 
                 results_list = detect_objects(image_cv2, model)
 
