@@ -2,7 +2,7 @@ import streamlit as st
 from PIL import Image
 import numpy as np
 import cv2
-import fitz 
+import fitz  # PyMuPDF
 from ultralytics import YOLO
 import pytesseract
 import pandas as pd
@@ -158,13 +158,15 @@ def main():
                     # Convert PDF to image if uploaded file is PDF
                     doc = fitz.open(stream=uploaded_file.read())  # Open the PDF from stream
                     page = doc.load_page(0)  # Load the first page
-                    pix = page.get_pixmap()  # Render page to an image
+                    zoom = 2.0  # Use a zoom factor to increase the resolution
+                    mat = fitz.Matrix(zoom, zoom)
+                    pix = page.get_pixmap(matrix=mat)  # Render page to an image with high resolution
                     img = Image.open(io.BytesIO(pix.tobytes('png')))  # Convert image to PIL format
                 else:
                     # Directly load image if it is not a PDF
                     img = Image.open(uploaded_file)
 
-                
+                st.image(img, caption='Uploaded Image/PDF', use_column_width=True)
                 image_np = np.array(img.convert('RGB'))
                 image_cv2 = cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR)
 
