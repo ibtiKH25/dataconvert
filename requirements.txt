@@ -8,4 +8,5 @@ opencv-python-headless==4.9.0.80
 ultralytics==8.2.10
 pymongo==4.5.0
 uuid
+PyMuPDF
 
