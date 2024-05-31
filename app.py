@@ -149,7 +149,7 @@ def main():
     page = st.sidebar.selectbox("Select a page", ["Convert Data", "Historique"])
 
     if page == "Convert Data":
-        st.title('Data Converter LEONI \n Convert Technical Drawings with Accuracy and Ease')
+        st.title('IBSA Data Converter \n Convert Technical Drawings with Accuracy and Ease')
         uploaded_files = st.file_uploader("Choose images to analyze...", type=["jpg", "png", "jpeg", "pdf"], accept_multiple_files=True)
         
         if uploaded_files is not None:
