@@ -301,6 +301,14 @@ def main():
                             st.session_state['modify_file'] = csv_file
                             st.experimental_rerun()
 
+                    # Add download button for CSV file
+                    with open(csv_file, 'r', encoding='utf-8-sig') as f:
+                        csv_data = f.read()
+                    st.download_button(label=f"Download CSV - {file_name}",
+                                       data=csv_data,
+                                       file_name=file_name,
+                                       mime='text/csv')
+
         else:
             st.write("No saved data found.")
 
