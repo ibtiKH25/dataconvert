@@ -288,7 +288,7 @@ def main():
                             st.warning(f"Could not open image file: {image_file}. Error: {e}")
                     
                     # Add buttons for delete and modify actions
-                    col1, col2 = st.columns(2)
+                    col1, col2, col3 = st.columns(3)
                     with col1:
                         if st.button(f"Delete {file_name}"):
                             os.remove(csv_file)
@@ -300,14 +300,13 @@ def main():
                         if st.button(f"Modify {file_name}"):
                             st.session_state['modify_file'] = csv_file
                             st.experimental_rerun()
-
-                    # Add download button for CSV file
-                    with open(csv_file, 'r', encoding='utf-8-sig') as f:
-                        csv_data = f.read()
-                    st.download_button(label=f"Download CSV - {file_name}",
-                                       data=csv_data,
-                                       file_name=file_name,
-                                       mime='text/csv')
+                    with col3:
+                        with open(csv_file, 'r', encoding='utf-8-sig') as f:
+                            csv_data = f.read()
+                        st.download_button(label="Download CSV",
+                                           data=csv_data,
+                                           file_name=file_name,
+                                           mime='text/csv')
 
         else:
             st.write("No saved data found.")
