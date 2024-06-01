@@ -211,7 +211,7 @@ def main():
                     class_data['HV'] = ['Non']
 
                     annotated_image = Image.fromarray(cv2.cvtColor(image_cv2, cv2.COLOR_BGR2RGB))
-                    st.image(annotated_image, caption=f'Annotated Image - {uploaded_file.name}', use_column_width=True)
+                    st.image(annotated_image, caption=f'Annotated Image', use_column_width=True)
 
                     # Create a DataFrame for the CSV export
                     df = pd.DataFrame.from_dict(class_data, orient='index').transpose()
@@ -219,11 +219,11 @@ def main():
                     df = df[column_order]  # Reorder the columns
 
                     # Display data in a table
-                    st.write(f"Extracted Data - {uploaded_file.name}:")
+                    st.write(f"Extracted Data:")
                     st.dataframe(df)
 
                     # Save the data and image
-                    if st.button(f"Save Data and Technical Drawing - {uploaded_file.name}"):
+                    if st.button(f"Save Data and Technical Drawing"):
                         output_dir = "saved_data"
                         if not os.path.exists(output_dir):
                             os.makedirs(output_dir)
@@ -245,7 +245,7 @@ def main():
 
                         # Provide a download button for the CSV file
                         csv = df.to_csv(index=False, sep=';', encoding='utf-8-sig').encode('utf-8-sig')
-                        st.download_button(label=f"Download data as CSV - {uploaded_file.name}",
+                        st.download_button(label="Download data as CSV",
                                         data=csv,
                                         file_name=f'{base_filename}_extracted_data.csv',
                                         mime='text/csv')
@@ -287,17 +287,17 @@ def main():
                         except Exception as e:
                             st.warning(f"Could not open image file: {image_file}. Error: {e}")
                     
-                    # Add buttons for delete and modify actions
+                    # Add buttons for delete, modify, and download actions
                     col1, col2, col3 = st.columns(3)
                     with col1:
-                        if st.button(f"Delete {file_name}"):
+                        if st.button("Delete"):
                             os.remove(csv_file)
                             if image_file:
                                 os.remove(image_file)
                             st.success(f"Deleted {file_name} and its image.")
                             st.experimental_rerun()
                     with col2:
-                        if st.button(f"Modify {file_name}"):
+                        if st.button("Modify"):
                             st.session_state['modify_file'] = csv_file
                             st.experimental_rerun()
                     with col3:
@@ -305,7 +305,7 @@ def main():
                             csv_data = f.read()
                         st.download_button(label="Download CSV",
                                            data=csv_data,
-                                           file_name=file_name,
+                                           file_name=f'{base_filename}.csv',
                                            mime='text/csv')
 
         else:
@@ -315,7 +315,7 @@ def main():
         if 'modify_file' in st.session_state:
             modify_file = st.session_state['modify_file']
             if modify_file:
-                st.write(f"Modifying: {modify_file}")
+                st.write(f"Modifying:")
                 df = pd.read_csv(modify_file, sep=';', encoding='utf-8-sig')
                 new_data = st.experimental_data_editor(df)
 
