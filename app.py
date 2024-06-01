@@ -225,6 +225,9 @@ def main():
                         if not os.path.exists(output_dir):
                             os.makedirs(output_dir)
 
+                      # Afficher le chemin complet du répertoire de stockage
+                       st.write(f"Répertoire de stockage : {os.path.abspath(output_dir)}")
+
                         # Save CSV
                         base_filename = os.path.splitext(uploaded_file.name)[0]
                         csv_path = os.path.join(output_dir, f"{base_filename}.csv")
