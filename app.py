@@ -238,8 +238,8 @@ def main():
 
                         # Save Image with the same extension as uploaded
                         image_extension = os.path.splitext(uploaded_file.name)[1]
-                        image_path = os.path.join(output_dir, f"{base_filename}{image_extension}")
-                        annotated_image.save(image_path)
+                        image_path = os.path.join(output_dir, f"{base_filename}.png")
+                        annotated_image.save(image_path)  # Always save as PNG
 
                         st.success(f"Data and Technical Drawing saved successfully: {csv_path} and {image_path}")
 
@@ -274,7 +274,7 @@ def main():
                     # Display corresponding image
                     image_files = glob.glob(f"saved_data/{base_filename}.*")
                     image_file = None
-                    for ext in ['jpg', 'jpeg', 'png', 'pdf']:
+                    for ext in ['jpg', 'jpeg', 'png']:
                         potential_image_file = f"saved_data/{base_filename}.{ext}"
                         if potential_image_file in image_files:
                             image_file = potential_image_file
@@ -308,6 +308,19 @@ def main():
                                            file_name=f'{base_filename}.csv',
                                            mime='text/csv',
                                            key=f"download_{file_name}")
+
+                    # Handle displaying PDF files
+                    pdf_file = f"saved_data/{base_filename}.pdf"
+                    if os.path.exists(pdf_file):
+                        st.write("PDF file found:")
+                        try:
+                            doc = fitz.open(pdf_file)
+                            page = doc.load_page(0)  # Load the first page
+                            pix = page.get_pixmap()
+                            img = Image.open(io.BytesIO(pix.tobytes('png')))
+                            st.image(img, caption='PDF Image', use_column_width=True)
+                        except Exception as e:
+                            st.warning(f"Could not open PDF file: {pdf_file}. Error: {e}")
 
         else:
             st.write("No saved data found.")
