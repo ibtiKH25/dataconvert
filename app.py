@@ -223,7 +223,7 @@ def main():
                     st.dataframe(df)
 
                     # Save the data and image
-                    if st.button(f"Save Data and Technical Drawing"):
+                    if st.button(f"Save Data and Technical Drawing - {uploaded_file.name}"):
                         output_dir = "saved_data"
                         if not os.path.exists(output_dir):
                             os.makedirs(output_dir)
@@ -245,7 +245,7 @@ def main():
 
                         # Provide a download button for the CSV file
                         csv = df.to_csv(index=False, sep=';', encoding='utf-8-sig').encode('utf-8-sig')
-                        st.download_button(label="Download data as CSV",
+                        st.download_button(label=f"Download data as CSV",
                                         data=csv,
                                         file_name=f'{base_filename}_extracted_data.csv',
                                         mime='text/csv')
@@ -290,14 +290,14 @@ def main():
                     # Add buttons for delete, modify, and download actions
                     col1, col2, col3 = st.columns(3)
                     with col1:
-                        if st.button("Delete"):
+                        if st.button("Delete", key=f"delete_{file_name}"):
                             os.remove(csv_file)
                             if image_file:
                                 os.remove(image_file)
                             st.success(f"Deleted {file_name} and its image.")
                             st.experimental_rerun()
                     with col2:
-                        if st.button("Modify"):
+                        if st.button("Modify", key=f"modify_{file_name}"):
                             st.session_state['modify_file'] = csv_file
                             st.experimental_rerun()
                     with col3:
@@ -306,7 +306,8 @@ def main():
                         st.download_button(label="Download CSV",
                                            data=csv_data,
                                            file_name=f'{base_filename}.csv',
-                                           mime='text/csv')
+                                           mime='text/csv',
+                                           key=f"download_{file_name}")
 
         else:
             st.write("No saved data found.")
@@ -315,7 +316,7 @@ def main():
         if 'modify_file' in st.session_state:
             modify_file = st.session_state['modify_file']
             if modify_file:
-                st.write(f"Modifying:")
+                st.write(f"Modifying: {os.path.basename(modify_file)}")
                 df = pd.read_csv(modify_file, sep=';', encoding='utf-8-sig')
                 new_data = st.experimental_data_editor(df)
 
