@@ -12,7 +12,7 @@ import glob
 import io
 
 # Set the page configuration
-st.set_page_config(page_title=" IBSA Data Converter ", layout="wide")
+st.set_page_config(page_title="IBSA Data Converter", layout="wide")
 
 # URL du fichier modèle sur GitHub
 model_url = 'https://github.com/ibtiKH25/dataconvert/raw/main/TrainingModel.pt'
@@ -36,7 +36,7 @@ download_model(model_url, model_local_path)
 pytesseract.pytesseract.tesseract_cmd = 'tesseract'
 
 # Load the YOLO model
-@st.cache_data
+@st.cache_resource
 def load_model(model_path):
     try:
         model = YOLO(model_path)
@@ -49,11 +49,14 @@ model = load_model(model_local_path)
 
 # Function to clean text by removing unwanted characters
 def clean_text(text):
-    unwanted_chars = [ '°', '<', '¢', '/', '\\', '|', '>' , '--' , '__' , '<<' , '>>' '@', '@@' , '^' , '^^' , ',' , '}' , '{' ,'&' , '&&' , '//' , ' Supplier P/N' , 'Customer P/N' , 
-    'À', 'Á', 'Â', 'Ã', 'Ä', 'Å', 'Æ', 'Ç', 'È', 'É', 'Ê', 'Ë', 'Ì', 'Í', 'Î', 'Ï', 'Ð', 'Ñ', 'Ò', 'Ó', 'Ô', 'Õ', 'Ö', 'Ø', 'Œ', 'Š', 'þ', 'Ù', 'Ú', 'Û', 'Ü', 'Ý', 'Ÿ',
-    'à', 'á', 'â', 'ã', 'ä', 'å', 'æ', 'ç', 'è', 'é', 'ê', 'ë', 'ì', 'í', 'î', 'ï', 'ð', 'ñ', 'ò', 'ó', 'ô', 'õ', 'ö', 'ø', 'œ', 'š', 'Þ', 'ù', 'ú', 'û', 'ü', 'ý', 'ÿ', 
-    '¢', 'ß', '¥', '£', '™', '©', 'ª', '×', '÷', '²', '³', '¼', '½', '¾', 'µ', '¿', '¶', '·', '¸', 'º', '°', '¯', '§', '…', '¤', '¦', '≠', '¬', 'ˆ', '¨', '‰' , "'" , "'Supplier P/N" , "'Customer P/N"
-]
+    unwanted_chars = [
+        '°', '<', '¢', '/', '\\', '|', '>', '--', '__', '<<', '>>', '@', '@@', '^', '^^', ',', '}', '{', '&', '&&', '//',
+        ' Supplier P/N', 'Customer P/N', 'À', 'Á', 'Â', 'Ã', 'Ä', 'Å', 'Æ', 'Ç', 'È', 'É', 'Ê', 'Ë', 'Ì', 'Í', 'Î', 'Ï',
+        'Ð', 'Ñ', 'Ò', 'Ó', 'Ô', 'Õ', 'Ö', 'Ø', 'Œ', 'Š', 'þ', 'Ù', 'Ú', 'Û', 'Ü', 'Ý', 'Ÿ', 'à', 'á', 'â', 'ã', 'ä', 
+        'å', 'æ', 'ç', 'è', 'é', 'ê', 'ë', 'ì', 'í', 'î', 'ï', 'ð', 'ñ', 'ò', 'ó', 'ô', 'õ', 'ö', 'ø', 'œ', 'š', 'Þ', 
+        'ù', 'ú', 'û', 'ü', 'ý', 'ÿ', '¢', 'ß', '¥', '£', '™', '©', 'ª', '×', '÷', '²', '³', '¼', '½', '¾', 'µ', '¿', 
+        '¶', '·', '¸', 'º', '°', '¯', '§', '…', '¤', '¦', '≠', '¬', 'ˆ', '¨', '‰', "'", "'Supplier P/N", "'Customer P/N"
+    ]
     for char in unwanted_chars:
         text = text.replace(char, '')
     return text
@@ -212,7 +215,7 @@ def main():
 
                     # Create a DataFrame for the CSV export
                     df = pd.DataFrame.from_dict(class_data, orient='index').transpose()
-                    column_order = ['Side1', 'Side2', 'LEONIPartNumber', 'SupplierPartNumber', 'Wiretype', 'Length', 'TypeOfCableAssembly' ,'Pigtail', 'HV']
+                    column_order = ['Side1', 'Side2', 'LEONIPartNumber', 'SupplierPartNumber', 'Wiretype', 'Length', 'TypeOfCableAssembly', 'Pigtail', 'HV']
                     df = df[column_order]  # Reorder the columns
 
                     # Display data in a table
@@ -225,8 +228,8 @@ def main():
                         if not os.path.exists(output_dir):
                             os.makedirs(output_dir)
 
-                      # Afficher le chemin complet du répertoire de stockage
-                       st.write(f"Répertoire de stockage : {os.path.abspath(output_dir)}")
+                        # Afficher le chemin complet du répertoire de stockage
+                        st.write(f"Répertoire de stockage : {os.path.abspath(output_dir)}")
 
                         # Save CSV
                         base_filename = os.path.splitext(uploaded_file.name)[0]
