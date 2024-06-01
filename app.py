@@ -223,7 +223,7 @@ def main():
                     st.dataframe(df)
 
                     # Save the data and image
-                    if st.button(f"Save Data and Technical Drawing - {uploaded_file.name}"):
+                    if st.button(f"Save Data and Technical Drawing"):
                         output_dir = "saved_data"
                         if not os.path.exists(output_dir):
                             os.makedirs(output_dir)
@@ -245,7 +245,7 @@ def main():
 
                         # Provide a download button for the CSV file
                         csv = df.to_csv(index=False, sep=';', encoding='utf-8-sig').encode('utf-8-sig')
-                        st.download_button(label=f"Download data as CSV",
+                        st.download_button(label="Download data as CSV",
                                         data=csv,
                                         file_name=f'{base_filename}_extracted_data.csv',
                                         mime='text/csv')
@@ -274,7 +274,7 @@ def main():
                     # Display corresponding image
                     image_files = glob.glob(f"saved_data/{base_filename}.*")
                     image_file = None
-                    for ext in ['jpg', 'jpeg', 'png']:
+                    for ext in ['jpg', 'jpeg', 'png', 'pdf']:
                         potential_image_file = f"saved_data/{base_filename}.{ext}"
                         if potential_image_file in image_files:
                             image_file = potential_image_file
