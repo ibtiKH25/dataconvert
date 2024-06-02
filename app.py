@@ -228,8 +228,7 @@ def main():
                         if not os.path.exists(output_dir):
                             os.makedirs(output_dir)
 
-                        # Afficher le chemin complet du répertoire de stockage
-                        st.write(f"Répertoire de stockage : {os.path.abspath(output_dir)}")
+                       
 
                         # Save CSV
                         base_filename = os.path.splitext(uploaded_file.name)[0]
@@ -241,7 +240,7 @@ def main():
                         image_path = os.path.join(output_dir, f"{base_filename}.png")
                         annotated_image.save(image_path)  # Always save as PNG
 
-                        st.success(f"Data and Technical Drawing saved successfully: {csv_path} and {image_path}")
+                        st.success(f"Data and Technical Drawing saved successfully")
 
                         # Provide a download button for the CSV file
                         csv = df.to_csv(index=False, sep=';', encoding='utf-8-sig').encode('utf-8-sig')
