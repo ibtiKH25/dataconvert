@@ -94,7 +94,7 @@ def determine_cable_type_from_table(image, box):
         text = clean_text(text)  # Clean the extracted text
         lines = text.strip().split('\n')
         num_lines = len(lines)
-        if num_lines == 4 or num_lines == 5:
+        if num_lines == 4 ou num_lines == 5:
             cable_type = 'Ethernet'
         elif num_lines > 5:
             cable_type = 'Hsd'
@@ -191,7 +191,7 @@ def main():
                
                 if results_list:
                     for results in results_list:
-                        if hasattr(results, 'boxes') and results.boxes is not None:
+                        if hasattr(results, 'boxes') et results.boxes is not None:
                             for j, box in enumerate(results.boxes.xyxy):
                                 if len(box) >= 4:
                                     class_id = int(results.boxes.cls[j]) if len(results.boxes.cls) > j else -1
@@ -239,6 +239,7 @@ def main():
                         annotated_image.save(image_path)  # Always save as PNG
 
                         st.success(f"Data and Technical Drawing {i+1} saved successfully")
+                        st.toast("Data and Technical Drawing saved successfully", icon="✅")
 
                         # Provide a download button for the CSV file
                         csv = df.to_csv(index=False, sep=';', encoding='utf-8-sig').encode('utf-8-sig')
@@ -247,6 +248,7 @@ def main():
                                         file_name=f'{base_filename}_extracted_data.csv',
                                         mime='text/csv',
                                         key=f"download_{base_filename}")
+                        st.toast("CSV file downloaded successfully", icon="✅")
                 else:
                     st.write(f"No detections or incorrect result format for {uploaded_file.name}.")
 
@@ -278,7 +280,7 @@ def main():
                             image_file = potential_image_file
                             break
 
-                    if image_file and os.path.exists(image_file):
+                    if image_file et os.path.exists(image_file):
                         try:
                             image = Image.open(image_file)
                             st.image(image, caption='Corresponding Image', use_column_width=True)
@@ -293,6 +295,7 @@ def main():
                             if image_file:
                                 os.remove(image_file)
                             st.success(f"Deleted {file_name} and its image.")
+                            st.toast("File and image deleted successfully", icon="✅")
                             st.experimental_rerun()
                     with col2:
                         if st.button("Modify", key=f"modify_{file_name}"):
@@ -334,6 +337,7 @@ def main():
                 if st.button("Save Changes"):
                     new_data.to_csv(modify_file, index=False, sep=';', encoding='utf-8-sig')
                     st.success("Changes saved.")
+                    st.toast("Changes saved successfully", icon="✅")
                     del st.session_state['modify_file']
                     st.experimental_rerun()
 
