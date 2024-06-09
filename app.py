@@ -52,9 +52,9 @@ def clean_text(text):
     unwanted_chars = [
         '°', '<', '¢', '/', '\\', '|', '>', '--', '__', '<<', '>>', '@', '@@', '^', '^^', ',', '}', '{', '&', '&&', '//',
         ' Supplier P/N', 'Customer P/N', 'À', 'Á', 'Â', 'Ã', 'Ä', 'Å', 'Æ', 'Ç', 'È', 'É', 'Ê', 'Ë', 'Ì', 'Í', 'Î', 'Ï',
-        'Ð', 'Ñ', 'Ò', 'Ó', 'Ô', 'Õ', 'Ö', 'Ø', 'Œ', 'Š', 'þ', 'Ù', 'Ú', 'Û', 'Ü', 'Ý', 'Ÿ', 'à', 'á', 'â', 'ã', 'ä', 
-        'å', 'æ', 'ç', 'è', 'é', 'ê', 'ë', 'ì', 'í', 'î', 'ï', 'ð', 'ñ', 'ò', 'ó', 'ô', 'õ', 'ö', 'ø', 'œ', 'š', 'Þ', 
-        'ù', 'ú', 'û', 'ü', 'ý', 'ÿ', '¢', 'ß', '¥', '£', '™', '©', 'ª', '×', '÷', '²', '³', '¼', '½', '¾', 'µ', '¿', 
+        'Ð', 'Ñ', 'Ò', 'Ó', 'Ô', 'Õ', 'Ö', 'Ø', 'Œ', 'Š', 'þ', 'Ù', 'Ú', 'Û', 'Ü', 'Ý', 'Ÿ', 'à', 'á', 'â', 'ã', 'ä',
+        'å', 'æ', 'ç', 'è', 'é', 'ê', 'ë', 'ì', 'í', 'î', 'ï', 'ð', 'ñ', 'ò', 'ó', 'ô', 'õ', 'ö', 'ø', 'œ', 'š', 'Þ',
+        'ù', 'ú', 'û', 'ü', 'ý', 'ÿ', '¢', 'ß', '¥', '£', '™', '©', 'ª', '×', '÷', '²', '³', '¼', '½', '¾', 'µ', '¿',
         '¶', '·', '¸', 'º', '°', '¯', '§', '…', '¤', '¦', '≠', '¬', 'ˆ', '¨', '‰', "'", "'Supplier P/N", "'Customer P/N"
     ]
     for char in unwanted_chars:
@@ -147,16 +147,16 @@ def add_custom_css():
 # Main function to run the Streamlit app
 def main():
     add_custom_css()
-    
+   
     st.sidebar.title("Menu")
     page = st.sidebar.selectbox("Select a page", ["Convert Data", "Historique"])
 
     if page == "Convert Data":
         st.title('LEONI Data Converter \n Convert Technical Drawings with Accuracy and Ease')
         uploaded_files = st.file_uploader("Choose images to analyze...", type=["jpg", "png", "jpeg", "pdf"], accept_multiple_files=True)
-        
+       
         if uploaded_files is not None:
-            for uploaded_file in uploaded_files:
+            for i, uploaded_file in enumerate(uploaded_files):
                 if uploaded_file.type == "application/pdf":
                     # Convert PDF to image if uploaded file is PDF
                     doc = fitz.open(stream=uploaded_file.read())  # Open the PDF from stream
@@ -169,7 +169,7 @@ def main():
                     # Directly load image if it is not a PDF
                     img = Image.open(uploaded_file)
 
-                
+               
                 image_np = np.array(img.convert('RGB'))
                 image_cv2 = cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR)
 
@@ -188,13 +188,13 @@ def main():
 
                 # Dictionary to store the extracted data
                 class_data = {new_name: [] for new_name in class_name_mapping.values()}
-                
+               
                 if results_list:
                     for results in results_list:
                         if hasattr(results, 'boxes') and results.boxes is not None:
-                            for i, box in enumerate(results.boxes.xyxy):
+                            for j, box in enumerate(results.boxes.xyxy):
                                 if len(box) >= 4:
-                                    class_id = int(results.boxes.cls[i]) if len(results.boxes.cls) > i else -1
+                                    class_id = int(results.boxes.cls[j]) if len(results.boxes.cls) > j else -1
                                     label = results.names[class_id] if class_id in results.names else "Unknown"
                                     new_label = class_name_mapping.get(label, label)
                                     if label == '6- TypeOfCableAssembly':
@@ -211,7 +211,7 @@ def main():
                     class_data['HV'] = ['Non']
 
                     annotated_image = Image.fromarray(cv2.cvtColor(image_cv2, cv2.COLOR_BGR2RGB))
-                    st.image(annotated_image, caption=f'Annotated Image', use_column_width=True)
+                    st.image(annotated_image, caption=f'Annotated Image {i+1}', use_column_width=True)
 
                     # Create a DataFrame for the CSV export
                     df = pd.DataFrame.from_dict(class_data, orient='index').transpose()
@@ -219,16 +219,14 @@ def main():
                     df = df[column_order]  # Reorder the columns
 
                     # Display data in a table
-                    st.write(f"Extracted Data:")
+                    st.write(f"Extracted Data for Image {i+1}:")
                     st.dataframe(df)
 
                     # Save the data and image
-                    if st.button(f"Save Data and Technical Drawing"):
+                    if st.button(f"Save Data and Technical Drawing {i+1}"):
                         output_dir = "saved_data"
                         if not os.path.exists(output_dir):
                             os.makedirs(output_dir)
-
-                       
 
                         # Save CSV
                         base_filename = os.path.splitext(uploaded_file.name)[0]
@@ -240,14 +238,15 @@ def main():
                         image_path = os.path.join(output_dir, f"{base_filename}.png")
                         annotated_image.save(image_path)  # Always save as PNG
 
-                        st.success(f"Data and Technical Drawing saved successfully")
+                        st.success(f"Data and Technical Drawing {i+1} saved successfully")
 
                         # Provide a download button for the CSV file
                         csv = df.to_csv(index=False, sep=';', encoding='utf-8-sig').encode('utf-8-sig')
-                        st.download_button(label="Download data as CSV",
+                        st.download_button(label=f"Download data as CSV {i+1}",
                                         data=csv,
                                         file_name=f'{base_filename}_extracted_data.csv',
-                                        mime='text/csv')
+                                        mime='text/csv',
+                                        key=f"download_{base_filename}")
                 else:
                     st.write(f"No detections or incorrect result format for {uploaded_file.name}.")
 
@@ -285,7 +284,7 @@ def main():
                             st.image(image, caption='Corresponding Image', use_column_width=True)
                         except Exception as e:
                             st.warning(f"Could not open image file: {image_file}. Error: {e}")
-                    
+                   
                     # Add buttons for delete, modify, and download actions
                     col1, col2, col3 = st.columns(3)
                     with col1:
