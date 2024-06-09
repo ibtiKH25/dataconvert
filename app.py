@@ -280,7 +280,7 @@ def main():
                             image_file = potential_image_file
                             break
 
-                    if image_file et os.path.exists(image_file):
+                    if image_file and os.path.exists(image_file):
                         try:
                             image = Image.open(image_file)
                             st.image(image, caption='Corresponding Image', use_column_width=True)
