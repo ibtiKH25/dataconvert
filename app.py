@@ -94,7 +94,7 @@ def determine_cable_type_from_table(image, box):
         text = clean_text(text)  # Clean the extracted text
         lines = text.strip().split('\n')
         num_lines = len(lines)
-        if num_lines == 4 ou num_lines == 5:
+        if num_lines == 4 or num_lines == 5:
             cable_type = 'Ethernet'
         elif num_lines > 5:
             cable_type = 'Hsd'
