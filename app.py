@@ -191,7 +191,7 @@ def main():
                
                 if results_list:
                     for results in results_list:
-                        if hasattr(results, 'boxes') et results.boxes is not None:
+                        if hasattr(results, 'boxes') and results.boxes is not None:
                             for j, box in enumerate(results.boxes.xyxy):
                                 if len(box) >= 4:
                                     class_id = int(results.boxes.cls[j]) if len(results.boxes.cls) > j else -1
